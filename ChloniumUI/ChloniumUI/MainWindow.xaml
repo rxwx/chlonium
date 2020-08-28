@@ -1,0 +1,24 @@
+﻿<Window x:Class="ChloniumUI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ChloniumUI"
+        mc:Ignorable="d"
+        ResizeMode="NoResize" Title="ChloniumUI v0.1" Height="186.563" Width="693.125">
+    <Grid Background="Black">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="67*"/>
+            <ColumnDefinition Width="749*"/>
+        </Grid.ColumnDefinitions>
+        <TextBox Name="MasterKeyText" MaxLength="50" HorizontalAlignment="Left" Height="23" Margin="23,27,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="502" Grid.Column="1"/>
+        <TextBlock Foreground="White" HorizontalAlignment="Left" Margin="14,27,0,0" TextWrapping="Wrap" Text="Master Key:" VerticalAlignment="Top" Grid.ColumnSpan="2" Height="20" Width="66"/>
+        <Button Foreground="White" Background="Black" Content="Check" HorizontalAlignment="Left" Margin="530,27,0,0" VerticalAlignment="Top" Width="75" Grid.Column="1" Height="23" Click="MasterKeyCheck_Click"/>
+        <TextBox Name="TextBox_CookieFile" HorizontalAlignment="Left" Height="23" Margin="23,63,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="502" Grid.Column="1"/>
+        <TextBlock Foreground="White" HorizontalAlignment="Left" Margin="14,66,0,0" TextWrapping="Wrap" Text="Cookie File:" VerticalAlignment="Top" Grid.ColumnSpan="2" Height="20" Width="66"/>
+        <Button Foreground="White" Background="Black" Content="Browse.." HorizontalAlignment="Left" Margin="530,63,0,0" VerticalAlignment="Top" Width="75" Grid.Column="1" Height="23" Click="CookieFile_Click"/>
+        <Button Foreground="White" Background="Black" Content="Export to Text File" Grid.Column="1" HorizontalAlignment="Left" Margin="117.5,108,0,0" VerticalAlignment="Top" Width="142" Height="32" Click="Export_Click"/>
+        <Button Foreground="White" Background="Black" Content="Import to Chrome" Grid.Column="1" HorizontalAlignment="Left" Margin="283.5,108,0,0" VerticalAlignment="Top" Width="140" Height="32" Click="Import_Click"/>
+
+    </Grid>
+</Window>
