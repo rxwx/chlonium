@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 namespace Chlonium
 {
@@ -6,11 +7,27 @@ namespace Chlonium
     {
         static void Main(string[] args)
         {
-            string userLocalstatePath = string.Format("{0}\\AppData\\Local\\Google\\Chrome\\User Data", Environment.GetEnvironmentVariable("USERPROFILE"));
-            AesCrypto crypto = new AesCrypto(userLocalstatePath);
+            string localStatePath = String.Empty;
+
+            if (args.Length > 0)
+            {
+
+                localStatePath = args[0];
+            }
+            else
+            {
+                localStatePath = string.Format("{0}\\AppData\\Local\\Google\\Chrome\\User Data\\Local State", 
+                    Environment.GetEnvironmentVariable("USERPROFILE"));
+            }
+
+            if (!File.Exists(localStatePath))
+            {
+                Console.WriteLine("[!] Local State file not found");
+                return;
+            }
+
+            AesCrypto crypto = new AesCrypto(localStatePath);
             byte[] masterKey = crypto.GetEncryptionKey();
-            Console.WriteLine("[*] Cookie file = \"{0}\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Cookies\"", 
-                Environment.GetEnvironmentVariable("USERPROFILE"));
             Console.WriteLine("[+] Masterkey = {0}", Convert.ToBase64String(masterKey));
         }
     }

