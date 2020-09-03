@@ -7,6 +7,7 @@ using Microsoft.Win32;
 using System.IO;
 using System.Data.SQLite;
 using System.Diagnostics;
+using static ChloniumUI.Browsers;
 
 namespace ChloniumUI
 {
@@ -17,14 +18,24 @@ namespace ChloniumUI
     {
         private string cookieFile = String.Empty;
 
+        private BrowserConfig browser = null;
+
         public MainWindow()
         {
             InitializeComponent();
+
+            foreach (var browser in browserConfigs)
+            {
+                if (File.Exists(browser.cookieFile))
+                {
+                    ComboBox.Items.Add(browser);
+                }
+            }
         }
 
         private bool ImportExportCheck()
         {
-            if (String.IsNullOrEmpty(cookieFile) || !File.Exists(cookieFile))
+            if (String.IsNullOrEmpty(browser.cookieFile) || !File.Exists(browser.cookieFile))
             {
                 MessageBox.Show("Enter a valid cookie file path");
                 return false;
@@ -63,19 +74,17 @@ namespace ChloniumUI
                 return;
 
             // kill chrome if it's running
-            if (Process.GetProcessesByName("chrome").Length > 0)
+            if (Process.GetProcessesByName(browser.processName).Length > 0)
             {
-                MessageBox.Show("Chrome is running. Please close it first", "Error");
+                MessageBox.Show($"{browser.processName} is running. Please close it first", "Error");
                 return;
             }
 
             // initialize AES
-            string userLocalstatePath = string.Format("{0}\\AppData\\Local\\Google\\Chrome\\User Data", Environment.GetEnvironmentVariable("USERPROFILE"));
-            var crypto = new AesCrypto(userLocalstatePath);
+            var crypto = new AesCrypto(browser.localState);
 
-            string cookieFile = string.Format("{0}\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Cookies", Environment.GetEnvironmentVariable("USERPROFILE"));
             string backupFile = String.Format("Cookies_{0}.bak", DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss"));
-            File.Copy(cookieFile, backupFile, true);
+            File.Copy(browser.cookieFile, backupFile, true);
 
             List<Cookie> items = ExportItems();
 
@@ -145,9 +154,7 @@ namespace ChloniumUI
         private void ImportItems(List<Cookie> items)
         {
             // SCARY STUFF!! Make sure we take a backup
-            string cs = string.Format("Data Source={0};", 
-                string.Format("{0}\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Cookies", 
-                Environment.GetEnvironmentVariable("USERPROFILE")));
+            string cs = string.Format("Data Source={0};", browser.cookieFile);
 
             var con = new SQLiteConnection(cs);
             con.Open();
@@ -197,7 +204,7 @@ namespace ChloniumUI
             var crypto = new AesCrypto(Convert.FromBase64String(MasterKeyText.Text));
 
             // open the Cookie db
-            string cs = string.Format("Data Source={0};", cookieFile);
+            string cs = string.Format("Data Source={0};", this.cookieFile);
             string stm = "SELECT creation_utc, host_key, name, value, " +
                 "path, expires_utc, is_secure, is_httponly, last_access_utc, " +
                 "has_expires, is_persistent, priority, encrypted_value, " +
@@ -261,6 +268,11 @@ namespace ChloniumUI
             }
             reader.Close();
             return items;
+        }
+
+        private void ComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            this.browser = (BrowserConfig)ComboBox.SelectedItem;
         }
     }
 }

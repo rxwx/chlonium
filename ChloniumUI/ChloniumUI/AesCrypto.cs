@@ -1,6 +1,7 @@
 ﻿using System;
 using PInvoke;
 using System.IO;
+using System.Windows;
 using static PInvoke.BCrypt;
 using System.Text.RegularExpressions;
 using System.Security.Cryptography;
@@ -11,21 +12,21 @@ namespace ChloniumUI
     {
         private static readonly Random rand = new Random();
 
-        public static readonly byte[] prefix = { 0x76, 0x31, 0x30 };
+        private static readonly byte[] prefix = { 0x76, 0x31, 0x30 };
 
-        public static readonly int PREFIX_SIZE = "v10".Length;
+        private static readonly int PREFIX_SIZE = prefix.Length;
         
         private static readonly int NONCE_SIZE = 12;
               
         private static readonly int TAG_SIZE = 16;
         
-        private readonly string profilePath;
+        private readonly string localStatePath;
         
         private byte[] key;
 
-        public AesCrypto(string profilePath)
+        public AesCrypto(string localStatePath)
         {
-            this.profilePath = profilePath;
+            this.localStatePath = localStatePath;
             InitDecryptor();
         }
 
@@ -48,16 +49,15 @@ namespace ChloniumUI
 
         public byte[] GetEncryptionKey()
         {
-            string localStatePath = profilePath + "\\Local State";
             byte[] encryptedKey;
-            string localState = File.ReadAllText(localStatePath);
+            string localState = File.ReadAllText(this.localStatePath);
 
             // Read encrypted Masterkey
-            Regex r = new Regex("encrypted_key\":\"([A-Za-z0-9+\\/]+)\"", RegexOptions.IgnoreCase);
+            Regex r = new Regex("encrypted_key\":\"([a-z0-9+\\/=]+)\"", RegexOptions.IgnoreCase);
 
             if (!r.IsMatch(localState))
             {
-                Console.WriteLine("[X] Couldn't find encrypted_key");
+                MessageBox.Show("Couldn't find encrypted key", "Error");
                 return null;
             }
 
