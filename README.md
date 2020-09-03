@@ -20,6 +20,8 @@ To use it, run the `ChloniumUI.exe` executable. Enter the previously extracted m
 
 `ChloniumUI` currently supports three Chromium based browsers: Edge, Chrome and Vivaldi. Additional browsers can be added in `Browsers.cs`. This adds the unintended benefit of being able to import an Edge cookie file into Chrome, or vice versa (for example), though it's probably not a good idea given that the user-agent will mismatch.
 
+**Important Note**: When importing the cookie file into your browser, all old cookies are cleared! A backup is copied to the current directory (with relevant time stamp). If you need to restore the previous cookies, simply copy the backup file over the `Cookies` file.
+
 ## Why
 
 Tools such as [Mimikatz](https://github.com/gentilkiwi/mimikatz/wiki/module-~-dpapi) and [SharpChromium](https://github.com/djhohnstein/SharpChromium) already have the capability to dump Chrome 80 cookies, why another tool?
