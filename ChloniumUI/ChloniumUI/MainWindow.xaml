@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ChloniumUI"
         mc:Ignorable="d"
-        ResizeMode="NoResize" Title="ChloniumUI v0.1" Height="209.884" Width="676.801">
+        ResizeMode="NoResize" Title="ChloniumUI" Height="209.884" Width="676.801">
     <Grid Background="Black">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="67*"/>
@@ -14,13 +14,13 @@
         <TextBox Name="MasterKeyText" MaxLength="50" HorizontalAlignment="Left" Height="23" Margin="23,27,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="502" Grid.Column="1"/>
         <TextBlock Foreground="White" HorizontalAlignment="Left" Margin="14,30,0,0" TextWrapping="Wrap" Text="Master Key" VerticalAlignment="Top" Grid.ColumnSpan="2" Height="20" Width="66"/>
         <Button Foreground="White" Background="Black" Content="Check" HorizontalAlignment="Left" Margin="530,27,0,0" VerticalAlignment="Top" Width="75" Grid.Column="1" Height="23" Click="MasterKeyCheck_Click"/>
-        <TextBox Name="TextBox_CookieFile" HorizontalAlignment="Left" Height="23" Margin="23,63,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="502" Grid.Column="1"/>
-        <TextBlock Foreground="White" HorizontalAlignment="Left" Margin="12,66,0,0" TextWrapping="Wrap" Text="Cookie File" VerticalAlignment="Top" Grid.ColumnSpan="2" Height="20" Width="66"/>
-        <Button Foreground="White" Background="Black" Content="Browse.." HorizontalAlignment="Left" Margin="530,63,0,0" VerticalAlignment="Top" Width="75" Grid.Column="1" Height="23" Click="CookieFile_Click"/>
+        <TextBox Name="TextBox_File" HorizontalAlignment="Left" Height="23" Margin="23,63,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="502" Grid.Column="1"/>
+        <TextBlock Foreground="White" HorizontalAlignment="Left" Margin="12,66,0,0" TextWrapping="Wrap" Text="Database" VerticalAlignment="Top" Grid.ColumnSpan="2" Height="20" Width="66"/>
+        <Button Foreground="White" Background="Black" Content="Browse.." HorizontalAlignment="Left" Margin="530,63,0,0" VerticalAlignment="Top" Width="75" Grid.Column="1" Height="23" Click="File_Click"/>
         <Button Foreground="White" Background="Black" Content="Export to Text File" Grid.Column="1" HorizontalAlignment="Left" Margin="115.5,140,0,0" VerticalAlignment="Top" Width="142" Height="32" Click="Export_Click"/>
-        <Button Foreground="White" Background="Black" Content="Import Cookies" Grid.Column="1" HorizontalAlignment="Left" Margin="281.5,140,0,0" VerticalAlignment="Top" Width="140" Height="32" Click="Import_Click"/>
+        <Button Foreground="White" Background="Black" Content="Import" Grid.Column="1" HorizontalAlignment="Left" Margin="281.5,140,0,0" VerticalAlignment="Top" Width="140" Height="32" Click="Import_Click"/>
         <TextBlock Foreground="White" HorizontalAlignment="Left" Margin="14,102,0,0" TextWrapping="Wrap" Text="Browser" VerticalAlignment="Top" Grid.ColumnSpan="2" Height="20" Width="66"/>
-        <ComboBox DisplayMemberPath="browserName" Name="ComboBox" Grid.Column="1" HorizontalAlignment="Left" Margin="23,102,0,0" VerticalAlignment="Top" Width="502" SelectionChanged="ComboBox_SelectionChanged" />
+        <ComboBox DisplayMemberPath="BrowserName" Name="ComboBox" Grid.Column="1" HorizontalAlignment="Left" Margin="23,102,0,0" VerticalAlignment="Top" Width="502" SelectionChanged="ComboBox_SelectionChanged" />
 
     </Grid>
 </Window>

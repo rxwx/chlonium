@@ -7,34 +7,38 @@ namespace ChloniumUI
     {
         public class BrowserConfig
         {
-            public string browserName { get; set; }
-            public string processName { get; set; }
-            public string cookieFile { get; set; }
-            public string localState { get; set; }
+            public string BrowserName { get; set; }
+            public string ProcessName { get; set; }
+            public string CookieFile { get; set; }
+            public string LoginFile { get; set; }
+            public string LocalState { get; set; }
         }
 
         public static List<BrowserConfig> browserConfigs = new List<BrowserConfig>
         {
             new BrowserConfig
             {
-                browserName = "Chrome",
-                processName = "chrome",
-                cookieFile = string.Format("{0}\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Cookies", Environment.GetEnvironmentVariable("USERPROFILE")),
-                localState = string.Format("{0}\\AppData\\Local\\Google\\Chrome\\User Data\\Local State", Environment.GetEnvironmentVariable("USERPROFILE"))
+                BrowserName = "Chrome",
+                ProcessName = "chrome",
+                CookieFile = string.Format("{0}\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Cookies", Environment.GetEnvironmentVariable("USERPROFILE")),
+                LoginFile = string.Format("{0}\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Login Data", Environment.GetEnvironmentVariable("USERPROFILE")),
+                LocalState = string.Format("{0}\\AppData\\Local\\Google\\Chrome\\User Data\\Local State", Environment.GetEnvironmentVariable("USERPROFILE"))
             },
             new BrowserConfig
             {
-                browserName = "Edge (Chromium)",
-                processName = "msedge",
-                cookieFile = string.Format("{0}\\AppData\\Local\\Microsoft\\Edge\\User Data\\Default\\Cookies", Environment.GetEnvironmentVariable("USERPROFILE")),
-                localState = string.Format("{0}\\AppData\\Local\\Microsoft\\Edge\\User Data\\Local State", Environment.GetEnvironmentVariable("USERPROFILE"))
+                BrowserName = "Edge (Chromium)",
+                ProcessName = "msedge",
+                CookieFile = string.Format("{0}\\AppData\\Local\\Microsoft\\Edge\\User Data\\Default\\Cookies", Environment.GetEnvironmentVariable("USERPROFILE")),
+                LoginFile = string.Format("{0}\\AppData\\Local\\Microsoft\\Edge\\User Data\\Default\\Login Data", Environment.GetEnvironmentVariable("USERPROFILE")),
+                LocalState = string.Format("{0}\\AppData\\Local\\Microsoft\\Edge\\User Data\\Local State", Environment.GetEnvironmentVariable("USERPROFILE"))
             },
             new BrowserConfig
             {
-                browserName = "Vivaldi",
-                processName = "vivaldi",
-                cookieFile = string.Format("{0}\\AppData\\Local\\Vivaldi\\User Data\\Default\\Cookies", Environment.GetEnvironmentVariable("USERPROFILE")),
-                localState = string.Format("{0}\\AppData\\Local\\Vivaldi\\User Data\\Local State", Environment.GetEnvironmentVariable("USERPROFILE"))
+                BrowserName = "Vivaldi",
+                ProcessName = "vivaldi",
+                CookieFile = string.Format("{0}\\AppData\\Local\\Vivaldi\\User Data\\Default\\Cookies", Environment.GetEnvironmentVariable("USERPROFILE")),
+                LoginFile = string.Format("{0}\\AppData\\Local\\Vivaldi\\User Data\\Default\\Login Data", Environment.GetEnvironmentVariable("USERPROFILE")),
+                LocalState = string.Format("{0}\\AppData\\Local\\Vivaldi\\User Data\\Local State", Environment.GetEnvironmentVariable("USERPROFILE"))
             },
         };
     }

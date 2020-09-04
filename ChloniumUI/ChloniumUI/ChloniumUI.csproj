@@ -84,7 +84,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Browsers.cs" />
-    <Compile Include="Cookie.cs" />
+    <Compile Include="Item.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
