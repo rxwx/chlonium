@@ -36,6 +36,10 @@ When carrying out Red Teaming, I sometimes need to dump a user's cookies multipl
 
 See [here](https://vimeo.com/452632559?quality=1080p) for a video demo.
 
+## Password Import/Export
+
+`CloniumUI` also supports password import and export. To use this feature, simply supply the `Login Data` database path instead of the `Cookies` db, along with the master key, and select the browser you wish to import them into (for export this doesn't matter). This allows you to either export passwords in plaintext to a file, or import them into your browser. As with cookies, you can import Chrome passwords into Edge, Edge passwords into Vivaldi etc.
+
 ## Detection
 
 Set a SACL on the Chrome `Local State` and `Cookies` files (as well as other sensitive files such as `Login Data` and `History`). Look for suspicious (e.g. non browser related) processes opening any of these files.
