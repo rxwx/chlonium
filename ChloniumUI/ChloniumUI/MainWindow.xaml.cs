@@ -227,6 +227,8 @@ namespace ChloniumUI
             SQLiteCommand cmd = new SQLiteCommand("DELETE FROM cookies;", con);
             cmd.ExecuteNonQuery();
 
+            int exceptionsCount = 0;
+
             foreach (Cookie c in items)
             {
                 cmd = new SQLiteCommand("INSERT INTO cookies (creation_utc, host_key, name, value, " +
@@ -257,7 +259,11 @@ namespace ChloniumUI
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    if (exceptionsCount < 3)
+                    {
+                        MessageBox.Show(ex.Message);
+                        exceptionsCount++;
+                    }
                 }
             }
         }
@@ -271,6 +277,8 @@ namespace ChloniumUI
             con.Open();
             SQLiteCommand cmd = new SQLiteCommand("DELETE FROM logins;", con);
             cmd.ExecuteNonQuery();
+
+            int exceptionsCount = 0;
 
             foreach (Login c in items)
             {
@@ -314,7 +322,11 @@ namespace ChloniumUI
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    if (exceptionsCount < 3)
+                    {
+                        MessageBox.Show(ex.Message);
+                        exceptionsCount++;
+                    }
                 }
             }
         }
@@ -337,6 +349,8 @@ namespace ChloniumUI
 
             var cmd = new SQLiteCommand(stm, con);
             SQLiteDataReader reader = cmd.ExecuteReader();
+
+            int exceptionsCount = 0;
 
             if (reader.HasRows)
             {
@@ -373,7 +387,11 @@ namespace ChloniumUI
                         }
                         catch (Exception e)
                         {
-                            MessageBox.Show(e.Message);
+                            if (exceptionsCount < 3)
+                            {
+                                MessageBox.Show(e.Message);
+                                exceptionsCount++;
+                            }
                             continue;
                         }
                     }
@@ -436,6 +454,8 @@ namespace ChloniumUI
             var cmd = new SQLiteCommand(stm, con);
             SQLiteDataReader reader = cmd.ExecuteReader();
 
+            int exceptionsCount = 0;
+
             if (reader.HasRows)
             {
                 bool ret = true;
@@ -471,7 +491,11 @@ namespace ChloniumUI
                         }
                         catch (Exception e)
                         {
-                            MessageBox.Show(e.Message);
+                            if (exceptionsCount < 3)
+                            {
+                                MessageBox.Show(e.Message);
+                                exceptionsCount++;
+                            }
                             continue;
                         }
                     }
