@@ -340,8 +340,28 @@ namespace ChloniumUI
 
             if (reader.HasRows)
             {
-                while (reader.Read())
+                bool ret = true;
+                int errCount = 0;
+
+                while (ret)
                 {
+                    try
+                    {
+                        ret = reader.Read();
+                    }
+                    catch (Exception e)
+                    {
+                        errCount++;
+
+                        if (errCount > 3)
+                        {
+                            MessageBox.Show("Some cookies could not be imported.", "Warning");
+                            break;
+                        }
+
+                        continue;
+                    }
+
                     byte[] encrypted_value = (byte[])reader["encrypted_value"];
                     byte[] decrypted_value = null;
 
@@ -389,7 +409,14 @@ namespace ChloniumUI
             {
                 Console.WriteLine("No rows found.");
             }
-            reader.Close();
+
+            try
+            {
+                reader.Close();
+            }
+            catch (Exception e)
+            { }
+
             return items;
         }
 
@@ -411,8 +438,28 @@ namespace ChloniumUI
 
             if (reader.HasRows)
             {
-                while (reader.Read())
+                bool ret = true;
+                int errCount = 0;
+
+                while (ret)
                 {
+                    try
+                    {
+                        ret = reader.Read();
+                    }
+                    catch (Exception e)
+                    {
+                        errCount++;
+
+                        if (errCount > 3)
+                        {
+                            MessageBox.Show("Some logins could not be imported.", "Warning");
+                            break;
+                        }
+
+                        continue;
+                    }
+                    
                     byte[] encrypted_value = (byte[])reader["password_value"];
                     byte[] decrypted_value = null;
 
