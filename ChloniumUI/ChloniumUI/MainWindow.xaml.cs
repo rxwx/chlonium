@@ -95,6 +95,7 @@ namespace ChloniumUI
 
             string backupFile;
             List<Item> items = new List<Item>();
+            int count = 0;
 
             switch (dbType)
             {
@@ -109,6 +110,7 @@ namespace ChloniumUI
                     {
                         c.encrypted_value = crypto.Encrypt(c.decrypted_value);
                     }
+                    count = items.Count();
                     ImportCookies(items);
                     break;
                 case "logins":
@@ -123,12 +125,13 @@ namespace ChloniumUI
                     {
                         i.password_value = crypto.Encrypt(i.decrypted_password_value);
                     }
+                    count = items.Count();
                     ImportLogins(items);
                     break;
                 default:
                     return;
             }
-            MessageBox.Show("Imported!");
+            MessageBox.Show($"Imported {count} {dbType}!");
         }
 
         private void File_Click(object sender, RoutedEventArgs e)
@@ -359,9 +362,11 @@ namespace ChloniumUI
 
                 while (ret)
                 {
+                    byte[] encrypted_value;
                     try
                     {
                         ret = reader.Read();
+                        encrypted_value = (byte[])reader["encrypted_value"];
                     }
                     catch (Exception e)
                     {
@@ -376,7 +381,6 @@ namespace ChloniumUI
                         continue;
                     }
 
-                    byte[] encrypted_value = (byte[])reader["encrypted_value"];
                     byte[] decrypted_value = null;
 
                     if (encrypted_value[0] == 'v' && encrypted_value[1] == '1' && encrypted_value[2] == '0')
@@ -435,6 +439,11 @@ namespace ChloniumUI
             catch (Exception e)
             { }
 
+            if(items.Count() == 0)
+            {
+                MessageBox.Show("No cookies were exported from specified input database!", "Error");
+            }
+
             return items;
         }
 
@@ -463,9 +472,11 @@ namespace ChloniumUI
 
                 while (ret)
                 {
+                    byte[] encrypted_value;
                     try
                     {
                         ret = reader.Read();
+                        encrypted_value = (byte[])reader["password_value"];
                     }
                     catch (Exception e)
                     {
@@ -480,7 +491,6 @@ namespace ChloniumUI
                         continue;
                     }
                     
-                    byte[] encrypted_value = (byte[])reader["password_value"];
                     byte[] decrypted_value = null;
 
                     if (encrypted_value[0] == 'v' && encrypted_value[1] == '1' && encrypted_value[2] == '0')
@@ -542,6 +552,12 @@ namespace ChloniumUI
                 Console.WriteLine("No rows found.");
             }
             reader.Close();
+
+            if(items.Count() == 0)
+            {
+                MessageBox.Show("No logins were exported from specified input database!", "Error");
+            }
+
             return items;
         }
 
