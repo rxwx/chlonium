@@ -35,6 +35,30 @@ namespace ChloniumUI
             }
         }
 
+        private bool IsHexKey(string value)
+        {
+            bool isHex;
+            foreach (var c in value)
+            {
+                isHex = ((c >= '0' && c <= '9') ||
+                         (c >= 'a' && c <= 'f') ||
+                         (c >= 'A' && c <= 'F'));
+
+                if (!isHex)
+                    return false;
+            }
+            return value.Length == 64;
+        }
+
+        public static byte[] StringToByteArray(string hex)
+        {
+            int NumberChars = hex.Length;
+            byte[] bytes = new byte[NumberChars / 2];
+            for (int i = 0; i < NumberChars; i += 2)
+                bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
+            return bytes;
+        }
+
         private bool ImportExportCheck()
         {
             if (String.IsNullOrEmpty(TextBox_File.Text) || !File.Exists(TextBox_File.Text))
@@ -48,6 +72,9 @@ namespace ChloniumUI
                 return false;
             }
 
+            if (!IsMasterKeyValid(MasterKeyText.Text))
+                return false;
+
             dbType = DetectDatabase();
 
             if (String.IsNullOrEmpty(dbType))
@@ -58,14 +85,25 @@ namespace ChloniumUI
             return true;
         }
 
-        private void MasterKeyCheck_Click(object sender, RoutedEventArgs e)
+        private byte[] GetMasterKey(string value)
+        {
+            byte[] keyBytes;
+            if (IsHexKey(value))
+                keyBytes = StringToByteArray(value);
+            else
+                keyBytes = Convert.FromBase64String(value);
+            return keyBytes;
+        }
+
+        private bool IsMasterKeyValid(string value)
         {
             try
             {
-                byte[] keyBytes = Convert.FromBase64String(MasterKeyText.Text);
+                byte[] keyBytes = GetMasterKey(value);
+
                 if (keyBytes.Length == 32)
                 {
-                    MessageBox.Show("Master key looks good");
+                    return true;
                 }
                 else
                 {
@@ -74,14 +112,27 @@ namespace ChloniumUI
             }
             catch
             {
-                MessageBox.Show("Master key doesn't look right. Make sure it is base64 encoded.", "Error");
+                MessageBox.Show("Master key doesn't look right. Make sure it is base64 or hex encoded.", "Error");
             }
+            return false;
+        }
+
+        private void MasterKeyCheck_Click(object sender, RoutedEventArgs e)
+        {
+            if (IsMasterKeyValid(MasterKeyText.Text))
+                MessageBox.Show("Master key looks good");
         }
 
         private void Import_Click(object sender, RoutedEventArgs e)
         {
             if (!ImportExportCheck())
                 return;
+
+            if (browser == null)
+            {
+                MessageBox.Show("Please select a browser");
+                return;
+            }
 
             // kill chrome if it's running
             if (Process.GetProcessesByName(browser.ProcessName).Length > 0)
@@ -217,7 +268,9 @@ namespace ChloniumUI
                     writer.WriteLine(c);
                 }
             }
-            MessageBox.Show("Exported!");
+
+            if (items.Count >= 1)
+                MessageBox.Show($"Exported {items.Count} {dbType}!");
         }
 
         private void ImportCookies(List<Item> items)
@@ -281,18 +334,51 @@ namespace ChloniumUI
             SQLiteCommand cmd = new SQLiteCommand("DELETE FROM logins;", con);
             cmd.ExecuteNonQuery();
 
+            cmd = con.CreateCommand();
+            cmd.CommandText = string.Format("PRAGMA table_info(logins);");
+            var reader = cmd.ExecuteReader();
+            bool hasPreferred = false;
+            int nameIndex = reader.GetOrdinal("Name");
+            while (reader.Read())
+            {
+                if (reader.GetString(nameIndex).Equals("preferred"))
+                {
+                    hasPreferred = true;
+                }
+            }
+
             int exceptionsCount = 0;
 
             foreach (Login c in items)
             {
-                cmd = new SQLiteCommand("INSERT INTO logins (origin_url, action_url, username_element, username_value, " +
+                string sqlCmd;
+
+                if (hasPreferred)
+                {
+                    sqlCmd = "INSERT INTO logins (origin_url, action_url, username_element, username_value, " +
                     "password_element, password_value, submit_element, signon_realm, preferred, date_created, blacklisted_by_user, " +
                     "scheme, password_type, times_used, form_data, date_synced, display_name, icon_url, federation_url, skip_zero_click, " +
                     "generation_upload_status, possible_username_pairs, id, date_last_used, moving_blocked_for) VALUES" +
                     " (@origin_url, @action_url, @username_element, @username_value, @password_element, @password_value, @submit_element," +
                     "@signon_realm, @preferred, @date_created, @blacklisted_by_user, @scheme, " +
                     "@password_type, @times_used, @form_data, @date_synced, @display_name, @icon_url, @federation_url, " +
-                    "@skip_zero_click, @generation_upload_status, @possible_username_pairs, @id, @date_last_used, @moving_blocked_for)", con);
+                    "@skip_zero_click, @generation_upload_status, @possible_username_pairs, @id, @date_last_used, @moving_blocked_for)";
+                    cmd = new SQLiteCommand(sqlCmd, con);
+                    cmd.Parameters.AddWithValue("@preferred", c.preferred);
+                }
+                else
+                {
+                    sqlCmd = "INSERT INTO logins (origin_url, action_url, username_element, username_value, " +
+                    "password_element, password_value, submit_element, signon_realm, date_created, blacklisted_by_user, " +
+                    "scheme, password_type, times_used, form_data, date_synced, display_name, icon_url, federation_url, skip_zero_click, " +
+                    "generation_upload_status, possible_username_pairs, id, date_last_used, moving_blocked_for) VALUES" +
+                    " (@origin_url, @action_url, @username_element, @username_value, @password_element, @password_value, @submit_element," +
+                    "@signon_realm, @date_created, @blacklisted_by_user, @scheme, " +
+                    "@password_type, @times_used, @form_data, @date_synced, @display_name, @icon_url, @federation_url, " +
+                    "@skip_zero_click, @generation_upload_status, @possible_username_pairs, @id, @date_last_used, @moving_blocked_for)";
+                    cmd = new SQLiteCommand(sqlCmd, con);
+                }
+
                 cmd.Parameters.AddWithValue("@origin_url", c.origin_url);
                 cmd.Parameters.AddWithValue("@action_url", c.action_url);
                 cmd.Parameters.AddWithValue("@username_element", c.username_element);
@@ -301,7 +387,6 @@ namespace ChloniumUI
                 cmd.Parameters.AddWithValue("@password_value", c.password_value);
                 cmd.Parameters.AddWithValue("@submit_element", c.submit_element);
                 cmd.Parameters.AddWithValue("@signon_realm", c.signon_realm);
-                cmd.Parameters.AddWithValue("@preferred", c.preferred);
                 cmd.Parameters.AddWithValue("@date_created", c.date_created);
                 cmd.Parameters.AddWithValue("@blacklisted_by_user", c.blacklisted_by_user);
                 cmd.Parameters.AddWithValue("@scheme", c.scheme);
@@ -338,8 +423,10 @@ namespace ChloniumUI
         {
             List<Item> items = new List<Item>();
 
+            byte[] keyBytes = GetMasterKey(MasterKeyText.Text);
+
             // initialize AES
-            var crypto = new AesCrypto(Convert.FromBase64String(MasterKeyText.Text));
+            var crypto = new AesCrypto(keyBytes);
 
             // open the Cookie db
             string cs = string.Format("Data Source={0};", this.inputFile);
@@ -439,7 +526,7 @@ namespace ChloniumUI
             catch (Exception e)
             { }
 
-            if(items.Count() == 0)
+            if (items.Count() == 0)
             {
                 MessageBox.Show("No cookies were exported from specified input database!", "Error");
             }
@@ -451,8 +538,10 @@ namespace ChloniumUI
         {
             List<Item> items = new List<Item>();
 
+            byte[] keyBytes = GetMasterKey(MasterKeyText.Text);
+
             // initialize AES
-            var crypto = new AesCrypto(Convert.FromBase64String(MasterKeyText.Text));
+            var crypto = new AesCrypto(keyBytes);
 
             // open the Cookie db
             string cs = string.Format("Data Source={0};", this.inputFile);
@@ -464,6 +553,28 @@ namespace ChloniumUI
             SQLiteDataReader reader = cmd.ExecuteReader();
 
             int exceptionsCount = 0;
+
+            int originUrlId = reader.GetOrdinal("origin_url");
+            int actionUrlId = reader.GetOrdinal("action_url");
+            int usernameElementId = reader.GetOrdinal("username_element");
+            int usernameValueId = reader.GetOrdinal("username_value");
+            int passwordElementId = reader.GetOrdinal("password_element");
+            int submitElement = reader.GetOrdinal("submit_element");
+            int signonRealmId = reader.GetOrdinal("signon_realm");
+            int preferredId = reader.GetOrdinal("preferred");
+            int dateCreatedId = reader.GetOrdinal("date_created");
+            int blacklistedByUserId = reader.GetOrdinal("blacklisted_by_user");
+            int schemeId = reader.GetOrdinal("scheme");
+            int passwordTypeId = reader.GetOrdinal("password_type");
+            int timesUsedId = reader.GetOrdinal("times_used");
+            int dateSyncedId = reader.GetOrdinal("date_synced");
+            int displayNameId = reader.GetOrdinal("display_name");
+            int iconUrl = reader.GetOrdinal("icon_url");
+            int federationUrlId = reader.GetOrdinal("federation_url");
+            int skipZeroClickId = reader.GetOrdinal("skip_zero_click");
+            int generationUploadStatusId = reader.GetOrdinal("generation_upload_status");
+            int idId = reader.GetOrdinal("id");
+            int dateLastUsedId = reader.GetOrdinal("date_last_used");
 
             if (reader.HasRows)
             {
@@ -490,7 +601,7 @@ namespace ChloniumUI
 
                         continue;
                     }
-                    
+
                     byte[] decrypted_value = null;
 
                     if (encrypted_value[0] == 'v' && encrypted_value[1] == '1' && encrypted_value[2] == '0')
@@ -517,31 +628,31 @@ namespace ChloniumUI
 
                     var login = new Login
                     {
-                        origin_url = reader.GetString(0),
-                        action_url = reader.GetString(1),
-                        username_element = reader.GetString(2),
-                        username_value = reader.GetString(3),
-                        password_element = reader.GetString(4),
+                        origin_url = originUrlId == -1 ? "" : reader.GetString(originUrlId),
+                        action_url = actionUrlId == -1 ? "" : reader.GetString(actionUrlId),
+                        username_element = usernameElementId == -1 ? "" : reader.GetString(usernameElementId),
+                        username_value = usernameValueId == -1 ? "" : reader.GetString(usernameValueId),
+                        password_element = passwordElementId == -1 ? "" : reader.GetString(passwordElementId),
                         password_value = encrypted_value,
-                        submit_element = reader.GetString(6),
-                        signon_realm = reader.GetString(7),
-                        preferred = reader.GetInt32(8),
-                        date_created = reader.GetInt32(9),
-                        blacklisted_by_user = reader.GetInt32(10),
-                        scheme = reader.GetInt32(11),
-                        password_type = reader.GetInt32(12),
-                        times_used = reader.GetInt32(13),
-                        form_data = (byte[])reader["form_data"],
-                        date_synced = reader.GetInt32(15),
-                        display_name = reader.GetString(16),
-                        icon_url = reader.GetString(17),
-                        federation_url = reader.GetString(18),
-                        skip_zero_click = reader.GetInt32(19),
-                        generation_upload_status = reader.GetInt32(20),
-                        possible_username_pairs = (byte[])reader["possible_username_pairs"],
-                        id = reader.GetInt32(22),
-                        date_last_used = reader.GetInt32(23),
-                        moving_blocked_for = (byte[])reader["moving_blocked_for"],
+                        submit_element = submitElement == -1 ? "" : reader.GetString(submitElement),
+                        signon_realm = signonRealmId == -1 ? "" : reader.GetString(signonRealmId),
+                        preferred = preferredId == -1 ? 0 : reader.GetInt32(preferredId),
+                        date_created = dateCreatedId == -1 ? 0 : reader.GetInt32(dateCreatedId),
+                        blacklisted_by_user = blacklistedByUserId == -1 ? 0 : reader.GetInt32(blacklistedByUserId),
+                        scheme = schemeId == -1 ? 0 : reader.GetInt32(schemeId),
+                        password_type = passwordTypeId == -1 ? 0 : reader.GetInt32(passwordTypeId),
+                        times_used = timesUsedId == -1 ? 0 : reader.GetInt32(timesUsedId),
+                        form_data = Convert.IsDBNull(reader["form_data"]) ? null : (byte[])reader["form_data"],
+                        date_synced = dateSyncedId == -1 ? 0 : reader.GetInt32(dateSyncedId),
+                        display_name = displayNameId == -1 ? "" : reader.GetString(displayNameId),
+                        icon_url = iconUrl == -1 ? "" : reader.GetString(iconUrl),
+                        federation_url = federationUrlId == -1 ? "" : reader.GetString(federationUrlId),
+                        skip_zero_click = skipZeroClickId == -1 ? 0 : reader.GetInt32(skipZeroClickId),
+                        generation_upload_status = generationUploadStatusId == -1 ? 0 : reader.GetInt32(generationUploadStatusId),
+                        possible_username_pairs = Convert.IsDBNull(reader["possible_username_pairs"]) ? null : (byte[])reader["possible_username_pairs"],
+                        id = idId == -1 ? 0 : reader.GetInt32(idId),
+                        date_last_used = dateLastUsedId == -1 ? 0 : reader.GetInt32(dateLastUsedId),
+                        moving_blocked_for = Convert.IsDBNull(reader["moving_blocked_for"]) ? null : (byte[])reader["moving_blocked_for"],
                         decrypted_password_value = decrypted_value
                     };
                     items.Add(login);
@@ -553,7 +664,7 @@ namespace ChloniumUI
             }
             reader.Close();
 
-            if(items.Count() == 0)
+            if (items.Count() == 0)
             {
                 MessageBox.Show("No logins were exported from specified input database!", "Error");
             }

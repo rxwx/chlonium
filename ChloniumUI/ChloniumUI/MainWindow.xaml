@@ -11,7 +11,7 @@
             <ColumnDefinition Width="67*"/>
             <ColumnDefinition Width="749*"/>
         </Grid.ColumnDefinitions>
-        <TextBox Name="MasterKeyText" MaxLength="50" HorizontalAlignment="Left" Height="23" Margin="23,27,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="502" Grid.Column="1"/>
+        <TextBox Name="MasterKeyText" MaxLength="64" HorizontalAlignment="Left" Height="23" Margin="23,27,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="502" Grid.Column="1"/>
         <TextBlock Foreground="White" HorizontalAlignment="Left" Margin="14,30,0,0" TextWrapping="Wrap" Text="Master Key" VerticalAlignment="Top" Grid.ColumnSpan="2" Height="20" Width="66"/>
         <Button Foreground="White" Background="Black" Content="Check" HorizontalAlignment="Left" Margin="530,27,0,0" VerticalAlignment="Top" Width="75" Grid.Column="1" Height="23" Click="MasterKeyCheck_Click"/>
         <TextBox Name="TextBox_File" HorizontalAlignment="Left" Height="23" Margin="23,63,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="502" Grid.Column="1"/>
