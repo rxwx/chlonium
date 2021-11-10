@@ -295,10 +295,9 @@ namespace ChloniumUI
             SQLiteCommand cmd = new SQLiteCommand("DELETE FROM cookies;", con);
             cmd.ExecuteNonQuery();
 
-<<<<<<< HEAD
             cmd = con.CreateCommand();
             cmd.CommandText = string.Format("PRAGMA table_info(cookies);");
-            SQLiteDataReader reader = cmd.ExecuteReader();
+            var reader = cmd.ExecuteReader();
             bool hasTopFrameSiteKey = false;
             int nameIndex = reader.GetOrdinal("Name");
             while (reader.Read())
@@ -309,18 +308,30 @@ namespace ChloniumUI
                 }
             }
 
-=======
->>>>>>> parent of 75ca963 (Add support for top_frame_site_key)
             int exceptionsCount = 0;
 
             foreach (Cookie c in items)
             {
-                cmd = new SQLiteCommand("INSERT INTO cookies (creation_utc, host_key, name, value, " +
-                    "path, expires_utc, is_secure, is_httponly, last_access_utc, has_expires, is_persistent, " +
-                    "priority, encrypted_value, samesite, source_scheme) VALUES" +
-                    " (@creation_utc, @host_key, @name, @value, @path, @expires_utc, @is_secure," +
-                    "@is_httponly, @last_access_utc, @has_expires, @is_persistent, @priority, " +
-                    "@encrypted_value, @samesite, @source_scheme)", con);
+                if (hasTopFrameSiteKey)
+                {
+                    cmd = new SQLiteCommand("INSERT INTO cookies (creation_utc, top_frame_site_key, host_key, name, value, " +
+                     "path, expires_utc, is_secure, is_httponly, last_access_utc, has_expires, is_persistent, " +
+                     "priority, encrypted_value, samesite, source_scheme) VALUES" +
+                     " (@creation_utc, @top_frame_site_key, @host_key, @name, @value, @path, @expires_utc, @is_secure," +
+                     "@is_httponly, @last_access_utc, @has_expires, @is_persistent, @priority, " +
+                     "@encrypted_value, @samesite, @source_scheme)", con);
+                    cmd.Parameters.AddWithValue("@top_frame_site_key", "");
+                }
+                else
+                {
+                    cmd = new SQLiteCommand("INSERT INTO cookies (creation_utc, host_key, name, value, " +
+                     "path, expires_utc, is_secure, is_httponly, last_access_utc, has_expires, is_persistent, " +
+                     "priority, encrypted_value, samesite, source_scheme) VALUES" +
+                     " (@creation_utc, @host_key, @name, @value, @path, @expires_utc, @is_secure," +
+                     "@is_httponly, @last_access_utc, @has_expires, @is_persistent, @priority, " +
+                     "@encrypted_value, @samesite, @source_scheme)", con);
+                }
+
                 cmd.Parameters.AddWithValue("@creation_utc", c.creation_utc);
                 cmd.Parameters.AddWithValue("@host_key", c.host_key);
                 cmd.Parameters.AddWithValue("@name", c.name);
