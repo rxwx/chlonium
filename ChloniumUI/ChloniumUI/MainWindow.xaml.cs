@@ -7,7 +7,11 @@ using Microsoft.Win32;
 using System.IO;
 using System.Data.SQLite;
 using System.Diagnostics;
+using Newtonsoft.Json.Linq;
+using SharpDPAPI;
+using SharpChrome;
 using static ChloniumUI.Browsers;
+using Ookii.Dialogs.Wpf;
 
 namespace ChloniumUI
 {
@@ -20,7 +24,13 @@ namespace ChloniumUI
 
         private string dbType;
 
+        private byte[] pvkBytes;
+
+        private string password;
+
         private BrowserConfig browser = null;
+
+        private string base64Key;
 
         public MainWindow()
         {
@@ -66,13 +76,13 @@ namespace ChloniumUI
                 MessageBox.Show("Enter a valid database file path", "Error");
                 return false;
             }
-            if (String.IsNullOrEmpty(MasterKeyText.Text))
+            if (String.IsNullOrEmpty(StateKeyText.Text))
             {
-                MessageBox.Show("Enter a valid master key", "Error");
+                MessageBox.Show("Enter a valid state key", "Error");
                 return false;
             }
 
-            if (!IsMasterKeyValid(MasterKeyText.Text))
+            if (!IsStateKeyValid(StateKeyText.Text))
                 return false;
 
             dbType = DetectDatabase();
@@ -85,7 +95,7 @@ namespace ChloniumUI
             return true;
         }
 
-        private byte[] GetMasterKey(string value)
+        private byte[] GetStateKey(string value)
         {
             byte[] keyBytes;
             if (IsHexKey(value))
@@ -95,11 +105,11 @@ namespace ChloniumUI
             return keyBytes;
         }
 
-        private bool IsMasterKeyValid(string value)
+        private bool IsStateKeyValid(string value)
         {
             try
             {
-                byte[] keyBytes = GetMasterKey(value);
+                byte[] keyBytes = GetStateKey(value);
 
                 if (keyBytes.Length == 32)
                 {
@@ -107,20 +117,22 @@ namespace ChloniumUI
                 }
                 else
                 {
-                    MessageBox.Show("Master key is not the correct length", "Error");
+                    MessageBox.Show("State key is not the correct length", "Error");
                 }
             }
             catch
             {
-                MessageBox.Show("Master key doesn't look right. Make sure it is base64 or hex encoded.", "Error");
+                MessageBox.Show("State key doesn't look right. Make sure it is base64 or hex encoded.", "Error");
             }
             return false;
         }
 
-        private void MasterKeyCheck_Click(object sender, RoutedEventArgs e)
+        private void StateKeyCheck_Click(object sender, RoutedEventArgs e)
         {
-            if (IsMasterKeyValid(MasterKeyText.Text))
-                MessageBox.Show("Master key looks good");
+            if (IsStateKeyValid(StateKeyText.Text))
+            {
+                MessageBox.Show("State key looks good");
+            }
         }
 
         private void Import_Click(object sender, RoutedEventArgs e)
@@ -151,7 +163,7 @@ namespace ChloniumUI
             switch (dbType)
             {
                 case "cookies":
-                    backupFile = String.Format("{0}_{1}.bak", Path.GetFileName(browser.CookieFile),
+                    backupFile = string.Format("{0}_{1}.bak", Path.GetFileName(browser.CookieFile),
                         DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss"));
                     File.Copy(browser.CookieFile, backupFile, true);
                     items = ExportCookies();
@@ -165,7 +177,7 @@ namespace ChloniumUI
                     ImportCookies(items);
                     break;
                 case "logins":
-                    backupFile = String.Format("{0}_{1}.bak", Path.GetFileName(browser.LoginFile),
+                    backupFile = string.Format("{0}_{1}.bak", Path.GetFileName(browser.LoginFile),
                         DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss"));
                     File.Copy(browser.LoginFile, backupFile, true);
 
@@ -199,8 +211,8 @@ namespace ChloniumUI
                 byte[] fileMagic = File.ReadAllBytes(this.inputFile).Take(15).ToArray();
                 if (Encoding.UTF8.GetString(fileMagic) != "SQLite format 3")
                 {
-                    MessageBox.Show("Selected file is not a Cookie database", "Error");
-                    this.inputFile = String.Empty;
+                    MessageBox.Show("Selected file is not a SQLite database", "Error");
+                    this.inputFile = string.Empty;
                     return;
                 }
                 TextBox_File.Text = filename;
@@ -209,7 +221,7 @@ namespace ChloniumUI
 
         public string DetectDatabase()
         {
-            string dbType = String.Empty;
+            string dbType = string.Empty;
             string cs = string.Format("Data Source={0};", this.inputFile);
             var con = new SQLiteConnection(cs);
             con.Open();
@@ -231,7 +243,7 @@ namespace ChloniumUI
             if (!ImportExportCheck())
                 return;
 
-            string outputFile = String.Empty;
+            string outputFile = string.Empty;
             SaveFileDialog dlg = new SaveFileDialog
             {
                 FileName = this.dbType,
@@ -261,9 +273,9 @@ namespace ChloniumUI
                 default:
                     return;
             }
-            using (var writer = File.CreateText(outputFile))
+            using (StreamWriter writer = File.CreateText(outputFile))
             {
-                foreach (var c in items)
+                foreach (Item c in items)
                 {
                     writer.WriteLine(c);
                 }
@@ -278,14 +290,15 @@ namespace ChloniumUI
             // SCARY STUFF!! Make sure we take a backup
             string cs = string.Format("Data Source={0};", browser.CookieFile);
 
-            var con = new SQLiteConnection(cs);
+            SQLiteConnection con = new SQLiteConnection(cs);
             con.Open();
             SQLiteCommand cmd = new SQLiteCommand("DELETE FROM cookies;", con);
             cmd.ExecuteNonQuery();
 
+<<<<<<< HEAD
             cmd = con.CreateCommand();
             cmd.CommandText = string.Format("PRAGMA table_info(cookies);");
-            var reader = cmd.ExecuteReader();
+            SQLiteDataReader reader = cmd.ExecuteReader();
             bool hasTopFrameSiteKey = false;
             int nameIndex = reader.GetOrdinal("Name");
             while (reader.Read())
@@ -296,30 +309,18 @@ namespace ChloniumUI
                 }
             }
 
+=======
+>>>>>>> parent of 75ca963 (Add support for top_frame_site_key)
             int exceptionsCount = 0;
 
             foreach (Cookie c in items)
             {
-                if (hasTopFrameSiteKey)
-                {
-                    cmd = new SQLiteCommand("INSERT INTO cookies (creation_utc, top_frame_site_key, host_key, name, value, " +
-                     "path, expires_utc, is_secure, is_httponly, last_access_utc, has_expires, is_persistent, " +
-                     "priority, encrypted_value, samesite, source_scheme) VALUES" +
-                     " (@creation_utc, @top_frame_site_key, @host_key, @name, @value, @path, @expires_utc, @is_secure," +
-                     "@is_httponly, @last_access_utc, @has_expires, @is_persistent, @priority, " +
-                     "@encrypted_value, @samesite, @source_scheme)", con);
-                    cmd.Parameters.AddWithValue("@top_frame_site_key", "");
-                }
-                else
-                {
-                    cmd = new SQLiteCommand("INSERT INTO cookies (creation_utc, host_key, name, value, " +
-                     "path, expires_utc, is_secure, is_httponly, last_access_utc, has_expires, is_persistent, " +
-                     "priority, encrypted_value, samesite, source_scheme) VALUES" +
-                     " (@creation_utc, @host_key, @name, @value, @path, @expires_utc, @is_secure," +
-                     "@is_httponly, @last_access_utc, @has_expires, @is_persistent, @priority, " +
-                     "@encrypted_value, @samesite, @source_scheme)", con);
-                }
-
+                cmd = new SQLiteCommand("INSERT INTO cookies (creation_utc, host_key, name, value, " +
+                    "path, expires_utc, is_secure, is_httponly, last_access_utc, has_expires, is_persistent, " +
+                    "priority, encrypted_value, samesite, source_scheme) VALUES" +
+                    " (@creation_utc, @host_key, @name, @value, @path, @expires_utc, @is_secure," +
+                    "@is_httponly, @last_access_utc, @has_expires, @is_persistent, @priority, " +
+                    "@encrypted_value, @samesite, @source_scheme)", con);
                 cmd.Parameters.AddWithValue("@creation_utc", c.creation_utc);
                 cmd.Parameters.AddWithValue("@host_key", c.host_key);
                 cmd.Parameters.AddWithValue("@name", c.name);
@@ -356,14 +357,14 @@ namespace ChloniumUI
             // SCARY STUFF!! Make sure we take a backup
             string cs = string.Format("Data Source={0};", browser.LoginFile);
 
-            var con = new SQLiteConnection(cs);
+            SQLiteConnection con = new SQLiteConnection(cs);
             con.Open();
             SQLiteCommand cmd = new SQLiteCommand("DELETE FROM logins;", con);
             cmd.ExecuteNonQuery();
 
             cmd = con.CreateCommand();
             cmd.CommandText = string.Format("PRAGMA table_info(logins);");
-            var reader = cmd.ExecuteReader();
+            SQLiteDataReader reader = cmd.ExecuteReader();
             bool hasPreferred = false;
             int nameIndex = reader.GetOrdinal("Name");
             while (reader.Read())
@@ -450,10 +451,10 @@ namespace ChloniumUI
         {
             List<Item> items = new List<Item>();
 
-            byte[] keyBytes = GetMasterKey(MasterKeyText.Text);
+            byte[] keyBytes = GetStateKey(StateKeyText.Text);
 
             // initialize AES
-            var crypto = new AesCrypto(keyBytes);
+            AesCrypto crypto = new AesCrypto(keyBytes);
 
             // open the Cookie db
             string cs = string.Format("Data Source={0};", this.inputFile);
@@ -461,10 +462,10 @@ namespace ChloniumUI
                 "path, expires_utc, is_secure, is_httponly, last_access_utc, " +
                 "has_expires, is_persistent, priority, encrypted_value, " +
                 "samesite, source_scheme FROM cookies ORDER BY host_key;";
-            var con = new SQLiteConnection(cs);
+            SQLiteConnection con = new SQLiteConnection(cs);
             con.Open();
 
-            var cmd = new SQLiteCommand(stm, con);
+            SQLiteCommand cmd = new SQLiteCommand(stm, con);
             SQLiteDataReader reader = cmd.ExecuteReader();
 
             int exceptionsCount = 0;
@@ -482,7 +483,7 @@ namespace ChloniumUI
                         ret = reader.Read();
                         encrypted_value = (byte[])reader["encrypted_value"];
                     }
-                    catch (Exception e)
+                    catch
                     {
                         errCount++;
 
@@ -519,7 +520,7 @@ namespace ChloniumUI
                         continue;
                     }
 
-                    var cookie = new Cookie
+                    Cookie cookie = new Cookie
                     {
                         creation_utc = reader.GetInt64(0),
                         host_key = reader.GetString(1),
@@ -550,7 +551,7 @@ namespace ChloniumUI
             {
                 reader.Close();
             }
-            catch (Exception e)
+            catch
             { }
 
             if (items.Count() == 0)
@@ -565,18 +566,18 @@ namespace ChloniumUI
         {
             List<Item> items = new List<Item>();
 
-            byte[] keyBytes = GetMasterKey(MasterKeyText.Text);
+            byte[] keyBytes = GetStateKey(StateKeyText.Text);
 
             // initialize AES
-            var crypto = new AesCrypto(keyBytes);
+            AesCrypto crypto = new AesCrypto(keyBytes);
 
             // open the Cookie db
             string cs = string.Format("Data Source={0};", this.inputFile);
             string stm = "SELECT * FROM logins ORDER BY origin_url;";
-            var con = new SQLiteConnection(cs);
+            SQLiteConnection con = new SQLiteConnection(cs);
             con.Open();
 
-            var cmd = new SQLiteCommand(stm, con);
+            SQLiteCommand cmd = new SQLiteCommand(stm, con);
             SQLiteDataReader reader = cmd.ExecuteReader();
 
             int exceptionsCount = 0;
@@ -616,7 +617,7 @@ namespace ChloniumUI
                         ret = reader.Read();
                         encrypted_value = (byte[])reader["password_value"];
                     }
-                    catch (Exception e)
+                    catch
                     {
                         errCount++;
 
@@ -653,7 +654,7 @@ namespace ChloniumUI
                         continue;
                     }
 
-                    var login = new Login
+                    Login login = new Login
                     {
                         origin_url = originUrlId == -1 ? "" : reader.GetString(originUrlId),
                         action_url = actionUrlId == -1 ? "" : reader.GetString(actionUrlId),
@@ -702,6 +703,194 @@ namespace ChloniumUI
         private void ComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             this.browser = (BrowserConfig)ComboBox.SelectedItem;
+        }
+
+        private bool ValidatePasswordOrPvk(string value, bool quiet = false)
+        {
+            this.pvkBytes = null;
+            this.password = string.Empty;
+
+            if (File.Exists(value))
+            {
+                byte[] content = File.ReadAllBytes(value);
+                if (BitConverter.ToUInt32(content, 0) != 2964713758)
+                {
+                    MessageBox.Show("Selected file does not appear to be a valid backup key");
+                    return false;
+                }
+                else
+                {
+                    if (!quiet)
+                        MessageBox.Show($"Using domain backup key file (seems valid)");
+                    this.pvkBytes = content;
+                    return true;
+                }
+            }
+            else
+            {
+                // coud be a password or base64 pvk
+                // 256 is max password size, but pvk will always be bigger
+                if (PasswordOrPVK.Text.Length <= 256 && PasswordOrPVK.Text.Length > 0)
+                {
+                    if (!quiet)
+                        MessageBox.Show("Will assume data provided is a password");
+                    this.password = PasswordOrPVK.Text;
+                    return true;
+                }
+                else
+                {
+                    // could still be a base64 pvk, lets validate
+                    try
+                    {
+                        byte[] content = Convert.FromBase64String(PasswordOrPVK.Text);
+                        if (BitConverter.ToUInt32(content, 0) != 2964713758)
+                        {
+                            MessageBox.Show("Base64 backup key provided, but is not valid");
+                            return false;
+                        }
+                        else
+                        {
+                            if (!quiet)
+                                MessageBox.Show($"Using base64 domain backup key (seems valid)");
+                            this.pvkBytes = content;
+                            return true;
+                        }
+                    }
+                    catch { }
+                    MessageBox.Show("Password or Backup Key is invalid");
+                    return false;
+                }
+            }
+        }
+
+        private void PasswordOrPVK_Check(object sender, RoutedEventArgs e)
+        {
+            ValidatePasswordOrPvk(PasswordOrPVK.Text);
+        }
+
+        private void Decrypt_Click(object sender, RoutedEventArgs e)
+        {
+            if (!ValidatePasswordOrPvk(PasswordOrPVK.Text, true))
+                return;
+
+            if (!ValidateStateFile(TextBox_LocalState.Text))
+                return;
+
+            if (!ValidateMasterKeyDirectory(TextBox_Masterkey.Text))
+                return;
+
+            // First decrypt the DPAPI masterkey
+            Dictionary<string, string> masterkeys = new Dictionary<string, string>();
+            if (pvkBytes != null && pvkBytes.Length > 0)
+            {
+                masterkeys = Triage.TriageUserMasterKeys(pvkBytes, false, "", "", TextBox_Masterkey.Text);
+            }
+            else if (!string.IsNullOrEmpty(password))
+            {
+                masterkeys = TriageExtension.TriageUserMasterKeys(password, TextBox_Masterkey.Text);
+            }
+
+            if (masterkeys.Count == 0)
+            {
+                MessageBox.Show("Failed to decrypt DPAPI MasterKey(s)");
+                return;
+            }
+
+            byte[] decryptedKey = Chrome.DecryptBase64StateKey(masterkeys, this.base64Key, false);
+            
+            if (decryptedKey == null || decryptedKey.Length == 0)
+            {
+                MessageBox.Show(string.Format("Failed to decrypt State Key with supplied {0}", this.pvkBytes != null ? "backup key" : "password"));
+            }
+            else if (Encoding.UTF8.GetString(decryptedKey).ToLower().Contains("masterkey needed"))
+            {
+                MessageBox.Show(string.Format("Failed: {0}", Encoding.UTF8.GetString(decryptedKey)));
+            }
+            else
+            {
+                string base64StateKey = Convert.ToBase64String(decryptedKey);
+                Clipboard.SetText(base64StateKey);
+                StateKeyText.Text = base64StateKey;
+                MessageBox.Show("Success! State key copied to clipboard");
+            }
+        }
+
+        private void PasswordOrPVK_Browse(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog dlg = new OpenFileDialog();
+            Nullable<bool> result = dlg.ShowDialog();
+
+            if (result == true)
+            {
+                if (ValidatePasswordOrPvk(dlg.FileName, true))
+                    PasswordOrPVK.Text = dlg.FileName;
+            }
+        }
+
+        private bool ValidateMasterKeyDirectory(string folderName)
+        {
+            bool isValidDirectory = false;
+            foreach (string file in Directory.GetFiles(folderName, "*", SearchOption.TopDirectoryOnly))
+            {
+                try
+                {
+                    byte[] content = File.ReadAllBytes(file);
+                    if (content.Length == 0x2E4)
+                    {
+                        isValidDirectory = true;
+                    }
+                    if (isValidDirectory)
+                    {
+                        return true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+            }
+            MessageBox.Show("Selected directory does not contain any DPAPI masterkeys");
+            return false;
+        }
+
+        private void DPAPIMasterKey_Browse(object sender, RoutedEventArgs e)
+        {
+            VistaFolderBrowserDialog dlg = new VistaFolderBrowserDialog();
+            Nullable<bool> result = dlg.ShowDialog();
+
+            if (result == true)
+            {
+                if (ValidateMasterKeyDirectory(dlg.SelectedPath))
+                    TextBox_Masterkey.Text = dlg.SelectedPath;
+            }
+        }
+
+        private bool ValidateStateFile(string filename)
+        {
+            try
+            {
+                string json = File.ReadAllText(filename);
+                JObject state = JObject.Parse(json);
+                this.base64Key = state["os_crypt"]["encrypted_key"].ToString();
+                return true;
+            }
+            catch
+            {
+                MessageBox.Show("Local State file is invalid");
+                return false;
+            }
+        }
+
+        private void LocalState_Browse(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog dlg = new OpenFileDialog();
+            Nullable<bool> result = dlg.ShowDialog();
+
+            if (result == true)
+            {
+                if (ValidateStateFile(dlg.FileName))
+                    TextBox_LocalState.Text = dlg.FileName;
+            }
         }
     }
 }

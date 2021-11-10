@@ -28,7 +28,7 @@ namespace Chlonium
 
             AesCrypto crypto = new AesCrypto(localStatePath);
             byte[] masterKey = crypto.GetEncryptionKey();
-            Console.WriteLine("[+] Masterkey = {0}", Convert.ToBase64String(masterKey));
+            Console.WriteLine("[+] Statekey = {0}", Convert.ToBase64String(masterKey));
         }
     }
 }

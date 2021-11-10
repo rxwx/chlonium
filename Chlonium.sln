@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chlonium", "Chlonium\Chloni
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChloniumUI", "ChloniumUI\ChloniumUI\ChloniumUI.csproj", "{9994372D-836B-431B-BB28-3D2DAB589ECB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpDPAPI", "SharpDPAPI\SharpDPAPI\SharpDPAPI.csproj", "{5F026C27-F8E6-4052-B231-8451C6A73838}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpChrome", "SharpDPAPI\SharpChrome\SharpChrome.csproj", "{2F00A05B-263D-4FCC-846B-DA82BD684603}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{9994372D-836B-431B-BB28-3D2DAB589ECB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9994372D-836B-431B-BB28-3D2DAB589ECB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9994372D-836B-431B-BB28-3D2DAB589ECB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F026C27-F8E6-4052-B231-8451C6A73838}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F026C27-F8E6-4052-B231-8451C6A73838}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F026C27-F8E6-4052-B231-8451C6A73838}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F026C27-F8E6-4052-B231-8451C6A73838}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2F00A05B-263D-4FCC-846B-DA82BD684603}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F00A05B-263D-4FCC-846B-DA82BD684603}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F00A05B-263D-4FCC-846B-DA82BD684603}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F00A05B-263D-4FCC-846B-DA82BD684603}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
