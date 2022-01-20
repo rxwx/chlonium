@@ -21,6 +21,8 @@ namespace ChloniumUI
         public byte[] encrypted_value;
         public bool samesite;
         public short source_scheme;
+        public short source_port;
+        public short is_same_party;
         public byte[] decrypted_value;
 
         public override string ToString()
