@@ -316,20 +316,20 @@ namespace ChloniumUI
                 {
                     cmd = new SQLiteCommand("INSERT INTO cookies (creation_utc, top_frame_site_key, host_key, name, value, " +
                      "path, expires_utc, is_secure, is_httponly, last_access_utc, has_expires, is_persistent, " +
-                     "priority, encrypted_value, samesite, source_scheme) VALUES" +
+                     "priority, encrypted_value, samesite, source_scheme, source_port, is_same_party) VALUES" +
                      " (@creation_utc, @top_frame_site_key, @host_key, @name, @value, @path, @expires_utc, @is_secure," +
                      "@is_httponly, @last_access_utc, @has_expires, @is_persistent, @priority, " +
-                     "@encrypted_value, @samesite, @source_scheme)", con);
+                     "@encrypted_value, @samesite, @source_scheme, @source_port, @is_same_party)", con);
                     cmd.Parameters.AddWithValue("@top_frame_site_key", "");
                 }
                 else
                 {
                     cmd = new SQLiteCommand("INSERT INTO cookies (creation_utc, host_key, name, value, " +
                      "path, expires_utc, is_secure, is_httponly, last_access_utc, has_expires, is_persistent, " +
-                     "priority, encrypted_value, samesite, source_scheme) VALUES" +
+                     "priority, encrypted_value, samesite, source_scheme, source_port, is_same_party) VALUES" +
                      " (@creation_utc, @host_key, @name, @value, @path, @expires_utc, @is_secure," +
                      "@is_httponly, @last_access_utc, @has_expires, @is_persistent, @priority, " +
-                     "@encrypted_value, @samesite, @source_scheme)", con);
+                     "@encrypted_value, @samesite, @source_scheme, @source_port, @is_same_party)", con);
                 }
 
                 cmd.Parameters.AddWithValue("@creation_utc", c.creation_utc);
@@ -347,6 +347,8 @@ namespace ChloniumUI
                 cmd.Parameters.AddWithValue("@encrypted_value", c.encrypted_value);
                 cmd.Parameters.AddWithValue("@samesite", c.samesite);
                 cmd.Parameters.AddWithValue("@source_scheme", c.source_scheme);
+                cmd.Parameters.AddWithValue("@source_port", c.source_port);
+                cmd.Parameters.AddWithValue("@is_same_party", c.is_same_party);
 
                 try
                 {
@@ -472,7 +474,7 @@ namespace ChloniumUI
             string stm = "SELECT creation_utc, host_key, name, value, " +
                 "path, expires_utc, is_secure, is_httponly, last_access_utc, " +
                 "has_expires, is_persistent, priority, encrypted_value, " +
-                "samesite, source_scheme FROM cookies ORDER BY host_key;";
+                "samesite, source_scheme, source_port, is_same_party FROM cookies ORDER BY host_key;";
             SQLiteConnection con = new SQLiteConnection(cs);
             con.Open();
 
@@ -548,6 +550,8 @@ namespace ChloniumUI
                         encrypted_value = encrypted_value,
                         samesite = reader.GetBoolean(13),
                         source_scheme = reader.GetInt16(14),
+                        source_port = reader.GetInt16(15),
+                        is_same_party = reader.GetInt16(16),
                         decrypted_value = decrypted_value
                     };
                     items.Add(cookie);

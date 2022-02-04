@@ -20,7 +20,7 @@ namespace ChloniumUI
             {
                 BrowserName = "Chrome",
                 ProcessName = "chrome",
-                CookieFile = string.Format("{0}\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Cookies", Environment.GetEnvironmentVariable("USERPROFILE")),
+                CookieFile = string.Format("{0}\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Network\\Cookies", Environment.GetEnvironmentVariable("USERPROFILE")),
                 LoginFile = string.Format("{0}\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Login Data", Environment.GetEnvironmentVariable("USERPROFILE")),
                 LocalState = string.Format("{0}\\AppData\\Local\\Google\\Chrome\\User Data\\Local State", Environment.GetEnvironmentVariable("USERPROFILE"))
             },
