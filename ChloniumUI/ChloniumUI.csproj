@@ -255,6 +255,8 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="FodyWeavers.xml" />
+    <EmbeddedResource Include="Costura32\SQLite.Interop.dll" />
+    <EmbeddedResource Include="Costura64\SQLite.Interop.dll" />
     <Content Include="SharpDPAPI\.gitignore" />
   </ItemGroup>
   <ItemGroup />
