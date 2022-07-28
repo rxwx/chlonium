@@ -15,6 +15,7 @@ namespace ChloniumUI
         public bool is_secure;
         public bool is_httponly;
         public long last_access_utc;
+        public long last_update_utc;
         public bool has_expires;
         public bool is_persistent;
         public short priority;
@@ -29,8 +30,8 @@ namespace ChloniumUI
         {
             return $"{creation_utc},{host_key},{name},{value}," +
                 $"{path},{expires_utc},{is_secure},{is_httponly}," +
-                $"{last_access_utc},{has_expires},{is_persistent}," +
-                $"{priority},{Encoding.UTF8.GetString(decrypted_value)},{samesite},{source_scheme}";
+                $"{last_access_utc},{last_update_utc},{has_expires},{is_persistent}," +
+                $"{priority},{Encoding.UTF8.GetString(decrypted_value)},{samesite},{source_scheme},{last_update_utc}";
         }
     }
 

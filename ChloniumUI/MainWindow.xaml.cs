@@ -315,20 +315,20 @@ namespace ChloniumUI
                 if (hasTopFrameSiteKey)
                 {
                     cmd = new SQLiteCommand("INSERT INTO cookies (creation_utc, top_frame_site_key, host_key, name, value, " +
-                     "path, expires_utc, is_secure, is_httponly, last_access_utc, has_expires, is_persistent, " +
+                     "path, expires_utc, is_secure, is_httponly, last_access_utc, last_update_utc, has_expires, is_persistent, " +
                      "priority, encrypted_value, samesite, source_scheme, source_port, is_same_party) VALUES" +
                      " (@creation_utc, @top_frame_site_key, @host_key, @name, @value, @path, @expires_utc, @is_secure," +
-                     "@is_httponly, @last_access_utc, @has_expires, @is_persistent, @priority, " +
+                     "@is_httponly, @last_access_utc, @last_update_utc, @has_expires, @is_persistent, @priority, " +
                      "@encrypted_value, @samesite, @source_scheme, @source_port, @is_same_party)", con);
                     cmd.Parameters.AddWithValue("@top_frame_site_key", "");
                 }
                 else
                 {
                     cmd = new SQLiteCommand("INSERT INTO cookies (creation_utc, host_key, name, value, " +
-                     "path, expires_utc, is_secure, is_httponly, last_access_utc, has_expires, is_persistent, " +
+                     "path, expires_utc, is_secure, is_httponly, last_access_utc, last_update_utc, has_expires, is_persistent, " +
                      "priority, encrypted_value, samesite, source_scheme, source_port, is_same_party) VALUES" +
                      " (@creation_utc, @host_key, @name, @value, @path, @expires_utc, @is_secure," +
-                     "@is_httponly, @last_access_utc, @has_expires, @is_persistent, @priority, " +
+                     "@is_httponly, @last_access_utc, @last_update_utc, @has_expires, @is_persistent, @priority, " +
                      "@encrypted_value, @samesite, @source_scheme, @source_port, @is_same_party)", con);
                 }
 
@@ -341,6 +341,7 @@ namespace ChloniumUI
                 cmd.Parameters.AddWithValue("@is_secure", c.is_secure);
                 cmd.Parameters.AddWithValue("@is_httponly", c.is_httponly);
                 cmd.Parameters.AddWithValue("@last_access_utc", c.last_access_utc);
+                cmd.Parameters.AddWithValue("@last_update_utc", c.last_update_utc);
                 cmd.Parameters.AddWithValue("@has_expires", c.has_expires);
                 cmd.Parameters.AddWithValue("@is_persistent", c.is_persistent);
                 cmd.Parameters.AddWithValue("@priority", c.priority);
@@ -472,7 +473,7 @@ namespace ChloniumUI
             // open the Cookie db
             string cs = string.Format("Data Source={0};", this.inputFile);
             string stm = "SELECT creation_utc, host_key, name, value, " +
-                "path, expires_utc, is_secure, is_httponly, last_access_utc, " +
+                "path, expires_utc, is_secure, is_httponly, last_access_utc, last_update_utc," +
                 "has_expires, is_persistent, priority, encrypted_value, " +
                 "samesite, source_scheme, source_port, is_same_party FROM cookies ORDER BY host_key;";
             SQLiteConnection con = new SQLiteConnection(cs);
@@ -533,27 +534,26 @@ namespace ChloniumUI
                         continue;
                     }
 
-                    Cookie cookie = new Cookie
-                    {
-                        creation_utc = reader.GetInt64(0),
-                        host_key = reader.GetString(1),
-                        name = reader.GetString(2),
-                        value = reader.GetString(3),
-                        path = reader.GetString(4),
-                        expires_utc = reader.GetInt64(5),
-                        is_secure = reader.GetBoolean(6),
-                        is_httponly = reader.GetBoolean(7),
-                        last_access_utc = reader.GetInt64(8),
-                        has_expires = reader.GetBoolean(9),
-                        is_persistent = reader.GetBoolean(10),
-                        priority = reader.GetInt16(11),
-                        encrypted_value = encrypted_value,
-                        samesite = reader.GetBoolean(13),
-                        source_scheme = reader.GetInt16(14),
-                        source_port = reader.GetInt16(15),
-                        is_same_party = reader.GetInt16(16),
-                        decrypted_value = decrypted_value
-                    };
+                    Cookie cookie = new Cookie();
+                    cookie.creation_utc = reader.GetInt64(0);
+                    cookie.host_key = reader.GetString(1);
+                    cookie.name = reader.GetString(2);
+                    cookie.value = reader.GetString(3);
+                    cookie.path = reader.GetString(4);
+                    cookie.expires_utc = reader.GetInt64(5);
+                    cookie.is_secure = reader.GetBoolean(6);
+                    cookie.is_httponly = reader.GetBoolean(7);
+                    cookie.last_access_utc = reader.GetInt64(8);
+                    cookie.last_update_utc = reader.GetInt64(9);
+                    cookie.has_expires = reader.GetBoolean(10);
+                    cookie.is_persistent = reader.GetBoolean(11);
+                    cookie.priority = reader.GetInt16(12);
+                    cookie.encrypted_value = encrypted_value;
+                    cookie.samesite = reader.GetBoolean(14);
+                    cookie.source_scheme = reader.GetInt16(15);
+                    cookie.source_port = reader.GetInt16(16);
+                    cookie.is_same_party = reader.GetInt16(17);
+                    cookie.decrypted_value = decrypted_value;
                     items.Add(cookie);
                 }
             }
