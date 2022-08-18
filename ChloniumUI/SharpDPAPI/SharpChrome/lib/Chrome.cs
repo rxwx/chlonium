@@ -536,8 +536,9 @@ namespace SharpChrome
             //string query = "SELECT cast(creation_utc as text) as creation_utc, host_key, name, path, cast(expires_utc as text) as expires_utc, is_secure, is_httponly, cast(last_access_utc as text) as last_access_utc, encrypted_value FROM cookies";
             
             // new, seems to work with partial indexing?? "/giphy table flip"
-            string query = "SELECT cast(creation_utc as text) as creation_utc, host_key, name, path, cast(expires_utc as text) as expires_utc, cast(last_access_utc as text) as last_access_utc, encrypted_value FROM cookies";
+            string query = "SELECT cast(creation_utc as text) as creation_utc, host_key, name, path, cast(expires_utc as text) as expires_utc, cast(last_access_utc as text) as last_access_utc,cast(last_update_utc as text) as last_update_utc encrypted_value FROM cookies";
             List<SQLiteQueryRow> results = database.Query2(query, false);
+
 
             // used if cookies "never expire" for json output
             DateTime epoch = new DateTime(1601, 1, 1);
@@ -692,7 +693,7 @@ namespace SharpChrome
                                 {
                                     Console.WriteLine("SEP=,");
                                 }
-                                Console.WriteLine("file_path,host,path,name,value,creation_utc,expires_utc,last_access_utc");
+                                Console.WriteLine("file_path,host,path,name,value,creation_utc,expires_utc,last_access_utc, last_update_utc");
                             }
                             someResults = true;
 
