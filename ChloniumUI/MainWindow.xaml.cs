@@ -545,15 +545,15 @@ namespace ChloniumUI
                         is_secure = reader.GetBoolean(6),
                         is_httponly = reader.GetBoolean(7),
                         last_access_utc = reader.GetInt64(8),
-                        last_update_utc = reader.GetInt64(8),
-                        has_expires = reader.GetBoolean(9),
-                        is_persistent = reader.GetBoolean(10),
-                        priority = reader.GetInt16(11),
+                        last_update_utc = reader.GetInt64(9),
+                        has_expires = reader.GetBoolean(10),
+                        is_persistent = reader.GetBoolean(11),
+                        priority = reader.GetInt16(12),
                         encrypted_value = encrypted_value,
-                        samesite = reader.GetBoolean(13),
-                        source_scheme = reader.GetInt16(14),
-                        source_port = reader.GetInt16(15),
-                        is_same_party = reader.GetInt16(16),
+                        samesite = reader.GetBoolean(14),
+                        source_scheme = reader.GetInt16(15),
+                        source_port = reader.GetInt16(16),
+                        is_same_party = reader.GetInt16(17),
                         decrypted_value = decrypted_value
                     };
                     items.Add(cookie);
