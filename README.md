@@ -59,6 +59,12 @@ Usage Note: When using the user's password to decrypt the DPAPI masterkey, Chlon
 
 This feature makes use of the excellent [SharpChrome](https://github.com/GhostPack/SharpDPAPI/tree/master/SharpChrome) and [SharpDPAPI](https://github.com/GhostPack/SharpDPAPI) projects by @harmj0y. Full credit goes to the original authors of SharpDPAPI.
 
+## Importer Types
+
+When importing a Cookie or Login database, Chlonium provides an option to choose an "Importer". You can choose from either `Database Importer` (the default) or `StateKey Importer`. The deafult Database Importer will decrypt each item in the source database, re-encrypt it with your current State Key and then import into your current browser's database. This usually works fine, however; if a browser update causes the Database schema to be changed - then Chlonium may need updating to handle the new schema. To try and workaround this issue, the StateKey Importer was created. Instead of re-encrypting each item in the database (and being reliant on knowing the DB schema), instead we can simply re-encrypt (with DPAPI) the StateKey stored in the `Local State` file to match that of the source database. At which point we can just swap the Cookie DB file out without having to mess with the database contents via SQL. Whilst this method should be more resilient to schema changes, it does have the side-effect of meaning that you will not be able to use the old Cookie file - since the StateKey will no longer be valid. To avoid any issues with restoration, the `Local State` file is backed up in the current directory along with the original Cookie/Login database. These can be manually restored if required. Additionally, because we don't need to re-encrypt each database item, the StateKey Importer is much faster!
+
+TL;DR: If you are having issues with the `Database Importer`, try selecting `StateKey Importer` instead :)
+
 ## Detection
 
 Set a SACL on the Chrome `Local State` and `Cookies` files (as well as other sensitive files such as `Login Data` and `History`). Look for suspicious (e.g. non browser related) processes opening any of these files.
