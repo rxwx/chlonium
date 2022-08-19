@@ -63,6 +63,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ExportMethods.cs" />
+    <Compile Include="ImportMethods.cs" />
     <Compile Include="SharpDPAPI\SharpChrome\Commands\Backupkey.cs" />
     <Compile Include="SharpDPAPI\SharpChrome\Commands\Cookies.cs" />
     <Compile Include="SharpDPAPI\SharpChrome\Commands\ICommand.cs" />

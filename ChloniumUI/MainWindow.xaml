@@ -5,48 +5,55 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ChloniumUI"
         mc:Ignorable="d"
-        ResizeMode="NoResize" Title="ChloniumUI" Height="254.019" Width="782.906">
+        ResizeMode="NoResize" Title="ChloniumUI" Height="304" Width="785">
     <Grid Background="Black">
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="0*"/>
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="67*"/>
             <ColumnDefinition Width="749*"/>
         </Grid.ColumnDefinitions>
-        <TabControl HorizontalAlignment="Left" Height="212" VerticalAlignment="Top" Width="759" Grid.ColumnSpan="2" Margin="5,5,0,0">
-            <TabItem Header="Import or Export Database">
-                <Grid Background="Black" Margin="0,0,0,0">
+        <TabControl Height="255" VerticalAlignment="Center" Grid.ColumnSpan="2" Margin="6,0,5,0" Background="Black" BorderThickness="2,2,2,2">
+            <TabItem Header="Import or Export Database" FontFamily="Segoe UI">
+                <Grid Background="Black" Margin="0,0,2,0" Height="232">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="67*"/>
-                        <ColumnDefinition Width="749*"/>
+                        <ColumnDefinition Width="64*"/>
+                        <ColumnDefinition Width="278*"/>
+                        <ColumnDefinition Width="437*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBox Name="StateKeyText" MaxLength="64" HorizontalAlignment="Left" Height="23" Margin="23,27,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="502" Grid.Column="1"/>
-                    <TextBlock Foreground="White" HorizontalAlignment="Left" Margin="14,30,0,0" TextWrapping="Wrap" Text="State Key" VerticalAlignment="Top" Grid.ColumnSpan="2" Height="20" Width="66"/>
-                    <Button Foreground="White" Background="Black" Content="Check" HorizontalAlignment="Left" Margin="530,27,0,0" VerticalAlignment="Top" Width="75" Grid.Column="1" Height="23" Click="StateKeyCheck_Click"/>
-                    <TextBox Name="TextBox_File" HorizontalAlignment="Left" Height="23" Margin="23,63,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="502" Grid.Column="1"/>
-                    <TextBlock Foreground="White" HorizontalAlignment="Left" Margin="12,66,0,0" TextWrapping="Wrap" Text="Database" VerticalAlignment="Top" Grid.ColumnSpan="2" Height="20" Width="66"/>
-                    <Button Foreground="White" Background="Black" Content="Browse.." HorizontalAlignment="Left" Margin="530,63,0,0" VerticalAlignment="Top" Width="75" Grid.Column="1" Height="23" Click="File_Click"/>
-                    <Button Foreground="White" Background="Black" Content="Export to Text File" Grid.Column="1" HorizontalAlignment="Left" Margin="115.5,140,0,0" VerticalAlignment="Top" Width="142" Height="32" Click="Export_Click"/>
-                    <Button Foreground="White" Background="Black" Content="Import" Grid.Column="1" HorizontalAlignment="Left" Margin="281.5,140,0,0" VerticalAlignment="Top" Width="140" Height="32" Click="Import_Click"/>
-                    <TextBlock Foreground="White" HorizontalAlignment="Left" Margin="14,102,0,0" TextWrapping="Wrap" Text="Browser" VerticalAlignment="Top" Grid.ColumnSpan="2" Height="20" Width="66"/>
-                    <ComboBox DisplayMemberPath="BrowserName" Name="ComboBox" Grid.Column="1" HorizontalAlignment="Left" Margin="23,102,0,0" VerticalAlignment="Top" Width="502" SelectionChanged="ComboBox_SelectionChanged" />
+                    <TextBox Name="StateKeyText" MaxLength="64" HorizontalAlignment="Left" Height="23" Margin="23,27,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="502" Grid.Column="1" Grid.ColumnSpan="2"/>
+                    <TextBlock HorizontalAlignment="Left" Margin="12,28,0,0" TextWrapping="Wrap" Text="State Key" VerticalAlignment="Top" Grid.ColumnSpan="2" Height="20" Width="66" FontWeight="Bold" Foreground="White"/>
+                    <Button Foreground="#FF707070" Background="Black" Content="Check" HorizontalAlignment="Left" Margin="262,27,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2" Height="23" Click="StateKeyCheck_Click" FontWeight="Bold"/>
+                    <TextBox Name="TextBox_File" HorizontalAlignment="Left" Height="23" Margin="23,63,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="502" Grid.Column="1" Grid.ColumnSpan="2"/>
+                    <TextBlock Foreground="White" HorizontalAlignment="Left" Margin="12,64,0,0" TextWrapping="Wrap" Text="Database" VerticalAlignment="Top" Grid.ColumnSpan="2" Height="20" Width="66" FontWeight="Bold"/>
+                    <Button Foreground="#FF707070" Background="Black" Content="Browse.." HorizontalAlignment="Left" Margin="262,63,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2" Height="23" Click="File_Click" FontWeight="Bold"/>
+                    <Button Foreground="#FF707070" Background="Black" Content="Export to Text File" Grid.Column="1" HorizontalAlignment="Left" Margin="115,169,0,0" VerticalAlignment="Top" Width="142" Height="32" Click="Export_Click" FontWeight="Bold"/>
+                    <Button Foreground="#FF707070" Background="Black" Content="Import" Grid.Column="2" HorizontalAlignment="Left" Margin="4,169,0,0" VerticalAlignment="Top" Width="140" Height="32" Click="Import_Click" FontWeight="Bold"/>
+                    <ComboBox DisplayMemberPath="BrowserName" Name="ComboBox" Grid.Column="1" HorizontalAlignment="Left" Margin="23,99,0,0" VerticalAlignment="Top" Width="502" SelectionChanged="ComboBox_SelectionChanged" Grid.ColumnSpan="2" Height="20" />
+                    <ComboBox DisplayMemberPath="Value" Name="ComboBox_Importer" Grid.Column="1" HorizontalAlignment="Left" Margin="23,135,0,0" VerticalAlignment="Top" Width="502" SelectionChanged="ComboBox_Importer_SelectionChanged" Grid.ColumnSpan="2" Height="20" />
+                    <TextBlock Foreground="White" HorizontalAlignment="Left" Margin="12,135,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="Importer" Grid.ColumnSpan="2" Height="20" Width="66" FontWeight="Bold" />
+                    <TextBlock Foreground="White" HorizontalAlignment="Left" Margin="12,99,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="Browser"  Grid.ColumnSpan="2" Height="20" Width="66" FontWeight="Bold"/>
                 </Grid>
             </TabItem>
             <TabItem Header="Offline Statekey Decryption">
-                <Grid Background="Black" Margin="0,0,0,1">
+                <Grid Background="Black" Height="209">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="67*"/>
                         <ColumnDefinition Width="749*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBox Name="PasswordOrPVK" MaxLength="2000" HorizontalAlignment="Left" Height="23" Margin="94,27,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="431" Grid.Column="1"/>
-                    <TextBlock Foreground="White" HorizontalAlignment="Left" Margin="7,30,0,0" TextWrapping="Wrap" Text="Password or Backup Key" VerticalAlignment="Top" Grid.ColumnSpan="2" Height="20" Width="131"/>
-                    <Button Foreground="White" Background="Black" Content="Check" HorizontalAlignment="Left" Margin="611,27,0,0" VerticalAlignment="Top" Width="75" Grid.Column="1" Height="23" Click="PasswordOrPVK_Check" />
-                    <TextBox Name="TextBox_Masterkey" HorizontalAlignment="Left" Height="23" Margin="94,63,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="431" Grid.Column="1"/>
-                    <TextBlock Foreground="White" HorizontalAlignment="Left" Margin="7,66,0,0" TextWrapping="NoWrap" Text="DPAPI Masterkey Directory" VerticalAlignment="Top" Grid.ColumnSpan="2" Height="20" Width="144"/>
-                    <Button Foreground="White" Background="Black" Content="Browse.." HorizontalAlignment="Left" Margin="530,63,0,0" VerticalAlignment="Top" Width="75" Grid.Column="1" Height="23" Click="DPAPIMasterKey_Browse"/>
-                    <TextBox Name="TextBox_LocalState" HorizontalAlignment="Left" Height="23" Margin="94,98,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="431" Grid.Column="1"/>
-                    <TextBlock Foreground="White" HorizontalAlignment="Left" Margin="7,98,0,0" TextWrapping="Wrap" Text="Local State File" VerticalAlignment="Top" Grid.ColumnSpan="2" Height="36" Width="93"/>
-                    <Button Foreground="White" Background="Black" Content="Browse.." HorizontalAlignment="Left" Margin="530,98,0,0" VerticalAlignment="Top" Width="75" Grid.Column="1" Height="23" Click="LocalState_Browse"/>
-                    <Button Foreground="White" Background="Black" Content="Decrypt Statekey" Grid.Column="1" HorizontalAlignment="Left" Margin="222,138,0,0" VerticalAlignment="Top" Width="169" Height="32" Click="Decrypt_Click" />
-                    <Button Foreground="White" Background="Black" Content="Browse.." HorizontalAlignment="Left" Margin="531,27,0,0" VerticalAlignment="Top" Width="75" Grid.Column="1" Height="23" Click="PasswordOrPVK_Browse"/>
+                    <TextBox Name="PasswordOrPVK" MaxLength="2000" HorizontalAlignment="Left" Height="23" Margin="103,27,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="422" Grid.Column="1"/>
+                    <TextBlock Foreground="White" HorizontalAlignment="Left" Margin="7,30,0,0" TextWrapping="Wrap" Text="Password or Backup Key" VerticalAlignment="Top" Grid.ColumnSpan="2" Height="20" Width="131" FontWeight="Bold"/>
+                    <Button Foreground="#FF707070" Background="Black" Content="Check" HorizontalAlignment="Left" Margin="611,27,0,0" VerticalAlignment="Top" Width="75" Grid.Column="1" Height="23" Click="PasswordOrPVK_Check" FontWeight="Bold" />
+                    <TextBox Name="TextBox_Masterkey" HorizontalAlignment="Left" Height="23" Margin="103,63,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="422" Grid.Column="1"/>
+                    <TextBlock Foreground="White" HorizontalAlignment="Left" Margin="7,66,0,0" TextWrapping="NoWrap" Text="DPAPI Masterkey Directory" VerticalAlignment="Top" Grid.ColumnSpan="2" Height="20" Width="156" FontWeight="Bold"/>
+                    <Button Foreground="#FF707070" Background="Black" Content="Browse.." HorizontalAlignment="Left" Margin="530,63,0,0" VerticalAlignment="Top" Width="75" Grid.Column="1" Height="23" Click="DPAPIMasterKey_Browse" FontWeight="Bold"/>
+                    <TextBox Name="TextBox_LocalState" HorizontalAlignment="Left" Height="23" Margin="103,98,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="422" Grid.Column="1"/>
+                    <TextBlock Foreground="White" HorizontalAlignment="Left" Margin="7,98,0,0" TextWrapping="Wrap" Text="Local State File" VerticalAlignment="Top" Grid.ColumnSpan="2" Height="23" Width="93" FontWeight="Bold"/>
+                    <Button Foreground="#FF707070" Background="Black" Content="Browse.." HorizontalAlignment="Left" Margin="530,98,0,0" VerticalAlignment="Top" Width="75" Grid.Column="1" Height="23" Click="LocalState_Browse" FontWeight="Bold"/>
+                    <Button Foreground="#FF707070" Background="Black" Content="Decrypt Statekey" Grid.Column="1" HorizontalAlignment="Left" Margin="222,143,0,0" VerticalAlignment="Top" Width="169" Height="32" Click="Decrypt_Click" FontWeight="Bold" />
+                    <Button Foreground="#FF707070" Background="Black" Content="Browse.." HorizontalAlignment="Left" Margin="531,27,0,0" VerticalAlignment="Top" Width="75" Grid.Column="1" Height="23" Click="PasswordOrPVK_Browse" FontWeight="Bold"/>
                 </Grid>
             </TabItem>
         </TabControl>

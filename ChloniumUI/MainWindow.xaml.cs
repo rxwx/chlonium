@@ -8,16 +8,37 @@ using System.IO;
 using System.Data.SQLite;
 using System.Diagnostics;
 using Newtonsoft.Json.Linq;
+using Ookii.Dialogs.Wpf;
 using SharpDPAPI;
 using SharpChrome;
 using static ChloniumUI.Browsers;
-using Ookii.Dialogs.Wpf;
+using static ChloniumUI.ExportMethods;
+using static ChloniumUI.ImportMethods;
 
 namespace ChloniumUI
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
+    /// 
+
+    public enum ImportMethod
+    {
+        DatabaseImport,
+        StateKeyImport
+    }
+
+    public class ComboboxItem
+    {
+        public string Text { get; set; }
+        public object Value { get; set; }
+
+        public override string ToString()
+        {
+            return Text;
+        }
+    }
+
     public partial class MainWindow : Window
     {
         private string inputFile;
@@ -32,6 +53,8 @@ namespace ChloniumUI
 
         private string base64Key;
 
+        private Type importerType;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -42,6 +65,11 @@ namespace ChloniumUI
                 {
                     ComboBox.Items.Add(browser);
                 }
+            }
+
+            foreach (var typePair in ListImporters())
+            {
+                ComboBox_Importer.Items.Add(typePair);
             }
         }
 
@@ -71,12 +99,12 @@ namespace ChloniumUI
 
         private bool ImportExportCheck()
         {
-            if (String.IsNullOrEmpty(TextBox_File.Text) || !File.Exists(TextBox_File.Text))
+            if (string.IsNullOrEmpty(TextBox_File.Text) || !File.Exists(TextBox_File.Text))
             {
                 MessageBox.Show("Enter a valid database file path", "Error");
                 return false;
             }
-            if (String.IsNullOrEmpty(StateKeyText.Text))
+            if (string.IsNullOrEmpty(StateKeyText.Text))
             {
                 MessageBox.Show("Enter a valid state key", "Error");
                 return false;
@@ -87,7 +115,7 @@ namespace ChloniumUI
 
             dbType = DetectDatabase();
 
-            if (String.IsNullOrEmpty(dbType))
+            if (string.IsNullOrEmpty(dbType))
             {
                 MessageBox.Show("Unknown database type", "Error");
                 return false;
@@ -157,39 +185,81 @@ namespace ChloniumUI
             var crypto = new AesCrypto(browser.LocalState);
 
             string backupFile;
+
             List<Item> items = new List<Item>();
+
+            byte[] keyBytes = GetStateKey(StateKeyText.Text);
+
             int count = 0;
+
+            Importer importer = (Importer)Activator.CreateInstance(importerType, new object[] { browser, keyBytes });
 
             switch (dbType)
             {
                 case "cookies":
-                    backupFile = string.Format("{0}_{1}.bak", Path.GetFileName(browser.CookieFile),
-                        DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss"));
-                    File.Copy(browser.CookieFile, backupFile, true);
-                    items = ExportCookies();
 
-                    // re-encrypt all items
-                    foreach (Cookie c in items)
+                    // Backup Cookie file
+                    backupFile = string.Format("{0}_{1}.bak", Path.GetFileName(browser.CookieFile), DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss"));
+                    File.Copy(browser.CookieFile, backupFile, true);
+
+                    if (importer.GetType() == typeof(DatabaseImporter))
                     {
-                        c.encrypted_value = crypto.Encrypt(c.decrypted_value);
+                        items = ExportCookies(keyBytes, this.inputFile);
+
+                        // re-encrypt all items
+                        foreach (Cookie c in items)
+                        {
+                            c.encrypted_value = crypto.Encrypt(c.decrypted_value);
+                        }
+                        count = items.Count();
+                        importer.ImportCookies(items);
                     }
-                    count = items.Count();
-                    ImportCookies(items);
+                    else if (importer.GetType() == typeof(StateKeyImporter))
+                    {
+                        // Backup Local State file
+                        backupFile = string.Format("{0}_{1}.bak", Path.GetFileName(browser.LocalState), DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss"));
+                        File.Copy(browser.LocalState, backupFile, true);
+
+                        // Copy new Cookie file
+                        File.Copy(this.inputFile, browser.CookieFile, true);
+
+                        importer.ImportCookies(null);
+                        MessageBox.Show("Imported new State Key!");
+                        return;
+                    }
+                    
                     break;
                 case "logins":
-                    backupFile = string.Format("{0}_{1}.bak", Path.GetFileName(browser.LoginFile),
-                        DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss"));
+
+                    backupFile = string.Format("{0}_{1}.bak", Path.GetFileName(browser.LoginFile), DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss"));
                     File.Copy(browser.LoginFile, backupFile, true);
 
-                    items = ExportLogins();
-
-                    // re-encrypt all items
-                    foreach (Login i in items)
+                    if (importer.GetType() == typeof(DatabaseImporter))
                     {
-                        i.password_value = crypto.Encrypt(i.decrypted_password_value);
+                        items = ExportLogins(keyBytes, this.inputFile);
+
+                        // re-encrypt all items
+                        foreach (Login i in items)
+                        {
+                            i.password_value = crypto.Encrypt(i.decrypted_password_value);
+                        }
+                        count = items.Count();
+                        importer.ImportLogins(items);
                     }
-                    count = items.Count();
-                    ImportLogins(items);
+                    else if (importer.GetType() == typeof(StateKeyImporter))
+                    {
+                        // Backup Local State file
+                        backupFile = string.Format("{0}_{1}.bak", Path.GetFileName(browser.LocalState), DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss"));
+                        File.Copy(browser.LocalState, backupFile, true);
+
+                        // Copy new Login file
+                        File.Copy(this.inputFile, browser.LoginFile, true);
+
+                        importer.ImportLogins(null);
+                        MessageBox.Show("Imported new State Key!");
+                        return;
+                    }
+
                     break;
                 default:
                     return;
@@ -261,14 +331,15 @@ namespace ChloniumUI
             // export cookies/logins to file
 
             List<Item> items;
+            byte[] keyBytes = GetStateKey(StateKeyText.Text);
 
             switch (dbType)
             {
                 case "cookies":
-                    items = ExportCookies();
+                    items = ExportCookies(keyBytes, this.inputFile);
                     break;
                 case "logins":
-                    items = ExportLogins();
+                    items = ExportLogins(keyBytes, this.inputFile);
                     break;
                 default:
                     return;
@@ -364,357 +435,6 @@ namespace ChloniumUI
                     }
                 }
             }
-        }
-
-        private void ImportLogins(List<Item> items)
-        {
-            // SCARY STUFF!! Make sure we take a backup
-            string cs = string.Format("Data Source={0};", browser.LoginFile);
-
-            SQLiteConnection con = new SQLiteConnection(cs);
-            con.Open();
-            SQLiteCommand cmd = new SQLiteCommand("DELETE FROM logins;", con);
-            cmd.ExecuteNonQuery();
-
-            cmd = con.CreateCommand();
-            cmd.CommandText = string.Format("PRAGMA table_info(logins);");
-            SQLiteDataReader reader = cmd.ExecuteReader();
-            bool hasPreferred = false;
-            int nameIndex = reader.GetOrdinal("Name");
-            while (reader.Read())
-            {
-                if (reader.GetString(nameIndex).Equals("preferred"))
-                {
-                    hasPreferred = true;
-                }
-            }
-
-            int exceptionsCount = 0;
-
-            foreach (Login c in items)
-            {
-                string sqlCmd;
-
-                if (hasPreferred)
-                {
-                    sqlCmd = "INSERT INTO logins (origin_url, action_url, username_element, username_value, " +
-                    "password_element, password_value, submit_element, signon_realm, preferred, date_created, blacklisted_by_user, " +
-                    "scheme, password_type, times_used, form_data, date_synced, display_name, icon_url, federation_url, skip_zero_click, " +
-                    "generation_upload_status, possible_username_pairs, id, date_last_used, moving_blocked_for) VALUES" +
-                    " (@origin_url, @action_url, @username_element, @username_value, @password_element, @password_value, @submit_element," +
-                    "@signon_realm, @preferred, @date_created, @blacklisted_by_user, @scheme, " +
-                    "@password_type, @times_used, @form_data, @date_synced, @display_name, @icon_url, @federation_url, " +
-                    "@skip_zero_click, @generation_upload_status, @possible_username_pairs, @id, @date_last_used, @moving_blocked_for)";
-                    cmd = new SQLiteCommand(sqlCmd, con);
-                    cmd.Parameters.AddWithValue("@preferred", c.preferred);
-                }
-                else
-                {
-                    sqlCmd = "INSERT INTO logins (origin_url, action_url, username_element, username_value, " +
-                    "password_element, password_value, submit_element, signon_realm, date_created, blacklisted_by_user, " +
-                    "scheme, password_type, times_used, form_data, date_synced, display_name, icon_url, federation_url, skip_zero_click, " +
-                    "generation_upload_status, possible_username_pairs, id, date_last_used, moving_blocked_for) VALUES" +
-                    " (@origin_url, @action_url, @username_element, @username_value, @password_element, @password_value, @submit_element," +
-                    "@signon_realm, @date_created, @blacklisted_by_user, @scheme, " +
-                    "@password_type, @times_used, @form_data, @date_synced, @display_name, @icon_url, @federation_url, " +
-                    "@skip_zero_click, @generation_upload_status, @possible_username_pairs, @id, @date_last_used, @moving_blocked_for)";
-                    cmd = new SQLiteCommand(sqlCmd, con);
-                }
-
-                cmd.Parameters.AddWithValue("@origin_url", c.origin_url);
-                cmd.Parameters.AddWithValue("@action_url", c.action_url);
-                cmd.Parameters.AddWithValue("@username_element", c.username_element);
-                cmd.Parameters.AddWithValue("@username_value", c.username_value);
-                cmd.Parameters.AddWithValue("@password_element", c.password_element);
-                cmd.Parameters.AddWithValue("@password_value", c.password_value);
-                cmd.Parameters.AddWithValue("@submit_element", c.submit_element);
-                cmd.Parameters.AddWithValue("@signon_realm", c.signon_realm);
-                cmd.Parameters.AddWithValue("@date_created", c.date_created);
-                cmd.Parameters.AddWithValue("@blacklisted_by_user", c.blacklisted_by_user);
-                cmd.Parameters.AddWithValue("@scheme", c.scheme);
-                cmd.Parameters.AddWithValue("@password_type", c.password_type);
-                cmd.Parameters.AddWithValue("@times_used", c.times_used);
-                cmd.Parameters.AddWithValue("@form_data", c.form_data);
-                cmd.Parameters.AddWithValue("@date_synced", c.date_synced);
-                cmd.Parameters.AddWithValue("@display_name", c.display_name);
-                cmd.Parameters.AddWithValue("@icon_url", c.icon_url);
-                cmd.Parameters.AddWithValue("@federation_url", c.federation_url);
-                cmd.Parameters.AddWithValue("@skip_zero_click", c.skip_zero_click);
-                cmd.Parameters.AddWithValue("@generation_upload_status", c.generation_upload_status);
-                cmd.Parameters.AddWithValue("@possible_username_pairs", c.possible_username_pairs);
-                cmd.Parameters.AddWithValue("@id", c.id);
-                cmd.Parameters.AddWithValue("@date_last_used", c.date_last_used);
-                cmd.Parameters.AddWithValue("@moving_blocked_for", c.moving_blocked_for);
-
-                try
-                {
-                    cmd.ExecuteNonQuery();
-                }
-                catch (Exception ex)
-                {
-                    if (exceptionsCount < 3)
-                    {
-                        MessageBox.Show(ex.Message);
-                        exceptionsCount++;
-                    }
-                }
-            }
-        }
-
-        private List<Item> ExportCookies()
-        {
-            List<Item> items = new List<Item>();
-
-            byte[] keyBytes = GetStateKey(StateKeyText.Text);
-
-            // initialize AES
-            AesCrypto crypto = new AesCrypto(keyBytes);
-
-            // open the Cookie db
-            string cs = string.Format("Data Source={0};", this.inputFile);
-            string stm = "SELECT creation_utc, host_key, name, value, " +
-                "path, expires_utc, is_secure, is_httponly, last_access_utc, last_update_utc," +
-                "has_expires, is_persistent, priority, encrypted_value, " +
-                "samesite, source_scheme, source_port, is_same_party FROM cookies ORDER BY host_key;";
-            SQLiteConnection con = new SQLiteConnection(cs);
-            con.Open();
-
-            SQLiteCommand cmd = new SQLiteCommand(stm, con);
-            SQLiteDataReader reader = cmd.ExecuteReader();
-
-            int exceptionsCount = 0;
-
-            if (reader.HasRows)
-            {
-                bool ret = true;
-                int errCount = 0;
-
-                while (ret)
-                {
-                    byte[] encrypted_value;
-                    try
-                    {
-                        ret = reader.Read();
-                        encrypted_value = (byte[])reader["encrypted_value"];
-                    }
-                    catch
-                    {
-                        errCount++;
-
-                        if (errCount > 3)
-                        {
-                            MessageBox.Show("Some cookies could not be imported.", "Warning");
-                            break;
-                        }
-
-                        continue;
-                    }
-
-                    byte[] decrypted_value = null;
-
-                    if (encrypted_value[0] == 'v' && encrypted_value[1] == '1' && encrypted_value[2] == '0')
-                    {
-                        try
-                        {
-                            decrypted_value = crypto.Decrypt(encrypted_value);
-                        }
-                        catch (Exception e)
-                        {
-                            if (exceptionsCount < 3)
-                            {
-                                MessageBox.Show(e.Message);
-                                exceptionsCount++;
-                            }
-                            continue;
-                        }
-                    }
-                    else
-                    {
-                        // TODO: we could extract DPAPI keys too maybe
-                        continue;
-                    }
-
-                    Cookie cookie = new Cookie
-                    {
-                        creation_utc = reader.GetInt64(0),
-                        host_key = reader.GetString(1),
-                        name = reader.GetString(2),
-                        value = reader.GetString(3),
-                        path = reader.GetString(4),
-                        expires_utc = reader.GetInt64(5),
-                        is_secure = reader.GetBoolean(6),
-                        is_httponly = reader.GetBoolean(7),
-                        last_access_utc = reader.GetInt64(8),
-                        last_update_utc = reader.GetInt64(9),
-                        has_expires = reader.GetBoolean(10),
-                        is_persistent = reader.GetBoolean(11),
-                        priority = reader.GetInt16(12),
-                        encrypted_value = encrypted_value,
-                        samesite = reader.GetBoolean(14),
-                        source_scheme = reader.GetInt16(15),
-                        source_port = reader.GetInt16(16),
-                        is_same_party = reader.GetInt16(17),
-                        decrypted_value = decrypted_value
-                    };
-                    items.Add(cookie);
-                }
-            }
-            else
-            {
-                Console.WriteLine("No rows found.");
-            }
-
-            try
-            {
-                reader.Close();
-            }
-            catch
-            { }
-
-            if (items.Count() == 0)
-            {
-                MessageBox.Show("No cookies were exported from specified input database!", "Error");
-            }
-
-            return items;
-        }
-
-        private List<Item> ExportLogins()
-        {
-            List<Item> items = new List<Item>();
-
-            byte[] keyBytes = GetStateKey(StateKeyText.Text);
-
-            // initialize AES
-            AesCrypto crypto = new AesCrypto(keyBytes);
-
-            // open the Cookie db
-            string cs = string.Format("Data Source={0};", this.inputFile);
-            string stm = "SELECT * FROM logins ORDER BY origin_url;";
-            SQLiteConnection con = new SQLiteConnection(cs);
-            con.Open();
-
-            SQLiteCommand cmd = new SQLiteCommand(stm, con);
-            SQLiteDataReader reader = cmd.ExecuteReader();
-
-            int exceptionsCount = 0;
-
-            int originUrlId = reader.GetOrdinal("origin_url");
-            int actionUrlId = reader.GetOrdinal("action_url");
-            int usernameElementId = reader.GetOrdinal("username_element");
-            int usernameValueId = reader.GetOrdinal("username_value");
-            int passwordElementId = reader.GetOrdinal("password_element");
-            int submitElement = reader.GetOrdinal("submit_element");
-            int signonRealmId = reader.GetOrdinal("signon_realm");
-            int preferredId = reader.GetOrdinal("preferred");
-            int dateCreatedId = reader.GetOrdinal("date_created");
-            int blacklistedByUserId = reader.GetOrdinal("blacklisted_by_user");
-            int schemeId = reader.GetOrdinal("scheme");
-            int passwordTypeId = reader.GetOrdinal("password_type");
-            int timesUsedId = reader.GetOrdinal("times_used");
-            int dateSyncedId = reader.GetOrdinal("date_synced");
-            int displayNameId = reader.GetOrdinal("display_name");
-            int iconUrl = reader.GetOrdinal("icon_url");
-            int federationUrlId = reader.GetOrdinal("federation_url");
-            int skipZeroClickId = reader.GetOrdinal("skip_zero_click");
-            int generationUploadStatusId = reader.GetOrdinal("generation_upload_status");
-            int idId = reader.GetOrdinal("id");
-            int dateLastUsedId = reader.GetOrdinal("date_last_used");
-
-            if (reader.HasRows)
-            {
-                bool ret = true;
-                int errCount = 0;
-
-                while (ret)
-                {
-                    byte[] encrypted_value;
-                    try
-                    {
-                        ret = reader.Read();
-                        encrypted_value = (byte[])reader["password_value"];
-                    }
-                    catch
-                    {
-                        errCount++;
-
-                        if (errCount > 3)
-                        {
-                            MessageBox.Show("Some logins could not be imported.", "Warning");
-                            break;
-                        }
-
-                        continue;
-                    }
-
-                    byte[] decrypted_value = null;
-
-                    if (encrypted_value[0] == 'v' && encrypted_value[1] == '1' && encrypted_value[2] == '0')
-                    {
-                        try
-                        {
-                            decrypted_value = crypto.Decrypt(encrypted_value);
-                        }
-                        catch (Exception e)
-                        {
-                            if (exceptionsCount < 3)
-                            {
-                                MessageBox.Show(e.Message);
-                                exceptionsCount++;
-                            }
-                            continue;
-                        }
-                    }
-                    else
-                    {
-                        // TODO: we could extract DPAPI keys too maybe
-                        continue;
-                    }
-
-                    Login login = new Login
-                    {
-                        origin_url = originUrlId == -1 ? "" : reader.GetString(originUrlId),
-                        action_url = actionUrlId == -1 ? "" : reader.GetString(actionUrlId),
-                        username_element = usernameElementId == -1 ? "" : reader.GetString(usernameElementId),
-                        username_value = usernameValueId == -1 ? "" : reader.GetString(usernameValueId),
-                        password_element = passwordElementId == -1 ? "" : reader.GetString(passwordElementId),
-                        password_value = encrypted_value,
-                        submit_element = submitElement == -1 ? "" : reader.GetString(submitElement),
-                        signon_realm = signonRealmId == -1 ? "" : reader.GetString(signonRealmId),
-                        preferred = preferredId == -1 ? 0 : reader.GetInt32(preferredId),
-                        date_created = dateCreatedId == -1 ? 0 : reader.GetInt32(dateCreatedId),
-                        blacklisted_by_user = blacklistedByUserId == -1 ? 0 : reader.GetInt32(blacklistedByUserId),
-                        scheme = schemeId == -1 ? 0 : reader.GetInt32(schemeId),
-                        password_type = passwordTypeId == -1 ? 0 : reader.GetInt32(passwordTypeId),
-                        times_used = timesUsedId == -1 ? 0 : reader.GetInt32(timesUsedId),
-                        form_data = Convert.IsDBNull(reader["form_data"]) ? null : (byte[])reader["form_data"],
-                        date_synced = dateSyncedId == -1 ? 0 : reader.GetInt32(dateSyncedId),
-                        display_name = displayNameId == -1 ? "" : reader.GetString(displayNameId),
-                        icon_url = iconUrl == -1 ? "" : reader.GetString(iconUrl),
-                        federation_url = federationUrlId == -1 ? "" : reader.GetString(federationUrlId),
-                        skip_zero_click = skipZeroClickId == -1 ? 0 : reader.GetInt32(skipZeroClickId),
-                        generation_upload_status = generationUploadStatusId == -1 ? 0 : reader.GetInt32(generationUploadStatusId),
-                        possible_username_pairs = Convert.IsDBNull(reader["possible_username_pairs"]) ? null : (byte[])reader["possible_username_pairs"],
-                        id = idId == -1 ? 0 : reader.GetInt32(idId),
-                        date_last_used = dateLastUsedId == -1 ? 0 : reader.GetInt32(dateLastUsedId),
-                        moving_blocked_for = Convert.IsDBNull(reader["moving_blocked_for"]) ? null : (byte[])reader["moving_blocked_for"],
-                        decrypted_password_value = decrypted_value
-                    };
-                    items.Add(login);
-                }
-            }
-            else
-            {
-                Console.WriteLine("No rows found.");
-            }
-            reader.Close();
-
-            if (items.Count() == 0)
-            {
-                MessageBox.Show("No logins were exported from specified input database!", "Error");
-            }
-
-            return items;
         }
 
         private void ComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
@@ -908,6 +628,11 @@ namespace ChloniumUI
                 if (ValidateStateFile(dlg.FileName))
                     TextBox_LocalState.Text = dlg.FileName;
             }
+        }
+
+        private void ComboBox_Importer_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            this.importerType = ((KeyValuePair<Type, string>)ComboBox_Importer.SelectedItem).Key;
         }
     }
 }
