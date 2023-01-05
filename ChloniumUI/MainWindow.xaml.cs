@@ -14,6 +14,7 @@ using SharpChrome;
 using static ChloniumUI.Browsers;
 using static ChloniumUI.ExportMethods;
 using static ChloniumUI.ImportMethods;
+using System.Text.RegularExpressions;
 
 namespace ChloniumUI
 {
@@ -450,7 +451,7 @@ namespace ChloniumUI
             if (File.Exists(value))
             {
                 byte[] content = File.ReadAllBytes(value);
-                if (BitConverter.ToUInt32(content, 0) != 2964713758)
+                if (BitConverter.ToUInt32(content, 0) != 0xb0b5f11e)
                 {
                     MessageBox.Show("Selected file does not appear to be a valid backup key");
                     return false;
@@ -470,7 +471,9 @@ namespace ChloniumUI
                 if (PasswordOrPVK.Text.Length <= 256 && PasswordOrPVK.Text.Length > 0)
                 {
                     if (!quiet)
-                        MessageBox.Show("Will assume data provided is a password");
+                        MessageBox.Show(string.Format("Will assume data provided is {0}",
+                            Regex.IsMatch(PasswordOrPVK.Text, @"^([a-f0-9]{32}|[a-f0-9]{40})$", RegexOptions.IgnoreCase)
+                            ? "a hash" : "a password"));
                     this.password = PasswordOrPVK.Text;
                     return true;
                 }
@@ -480,7 +483,7 @@ namespace ChloniumUI
                     try
                     {
                         byte[] content = Convert.FromBase64String(PasswordOrPVK.Text);
-                        if (BitConverter.ToUInt32(content, 0) != 2964713758)
+                        if (BitConverter.ToUInt32(content, 0) != 0xb0b5f11e)
                         {
                             MessageBox.Show("Base64 backup key provided, but is not valid");
                             return false;
@@ -566,28 +569,25 @@ namespace ChloniumUI
 
         private bool ValidateMasterKeyDirectory(string folderName)
         {
-            bool isValidDirectory = false;
-            foreach (string file in Directory.GetFiles(folderName, "*", SearchOption.TopDirectoryOnly))
+            int keys = 0;
+            if ((File.GetAttributes(folderName) & FileAttributes.Directory) == FileAttributes.Directory)
             {
-                try
+                foreach (var file in Directory.GetFiles(folderName))
                 {
-                    byte[] content = File.ReadAllBytes(file);
-                    if (content.Length == 0x2E4)
+                    try
                     {
-                        isValidDirectory = true;
+                        FileInfo f = new FileInfo(file);
+                        if (Helpers.IsGuid(f.Name))
+                        {
+                            var masterKeyBytes = File.ReadAllBytes(file);
+                            if (Helpers.IsGuid(Encoding.Unicode.GetString(masterKeyBytes, 12, 72)))
+                                keys++;
+                        }
                     }
-                    if (isValidDirectory)
-                    {
-                        return true;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message);
+                    catch { }
                 }
             }
-            MessageBox.Show("Selected directory does not contain any DPAPI masterkeys");
-            return false;
+            return keys > 0;
         }
 
         private void DPAPIMasterKey_Browse(object sender, RoutedEventArgs e)
@@ -599,6 +599,8 @@ namespace ChloniumUI
             {
                 if (ValidateMasterKeyDirectory(dlg.SelectedPath))
                     TextBox_Masterkey.Text = dlg.SelectedPath;
+                else
+                    MessageBox.Show("Selected directory does not contain any DPAPI masterkeys");
             }
         }
 

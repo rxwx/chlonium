@@ -13,7 +13,7 @@ using Microsoft.Win32;
 
 namespace SharpChrome
 {
-    public class Chrome
+    class Chrome
     {
         internal static byte[] DPAPI_HEADER = UTF8Encoding.UTF8.GetBytes("DPAPI");
         internal static byte[] DPAPI_CHROME_UNKV10 = UTF8Encoding.UTF8.GetBytes("v10");
@@ -242,16 +242,28 @@ namespace SharpChrome
                 if (browser.ToLower() == "chrome")
                 {
                     cookiePath = String.Format("{0}\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Cookies", userDirectory);
+                    if(!File.Exists(cookiePath))
+                    {
+                        cookiePath = String.Format("{0}\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Network\\Cookies", userDirectory);
+                    }
                     aesStateKeyPath = String.Format("{0}\\AppData\\Local\\Google\\Chrome\\User Data\\Local State", userDirectory);
                 }
                 else if (browser.ToLower() == "edge")
                 {
                     cookiePath = String.Format("{0}\\AppData\\Local\\Microsoft\\Edge\\User Data\\Default\\Cookies", userDirectory);
+                    if (!File.Exists(cookiePath))
+                    {
+                        cookiePath = String.Format("{0}\\AppData\\Local\\Microsoft\\Edge\\User Data\\Default\\Network\\Cookies", userDirectory);
+                    }
                     aesStateKeyPath = String.Format("{0}\\AppData\\Local\\Microsoft\\Edge\\User Data\\Local State", userDirectory);
                 }
                 else if (browser.ToLower() == "brave")
                 {
                     cookiePath = String.Format("{0}\\AppData\\Local\\BraveSoftware\\Brave-Browser\\User Data\\Default\\Cookies", userDirectory);
+                    if (!File.Exists(cookiePath))
+                    {
+                        cookiePath = String.Format("{0}\\AppData\\Local\\BraveSoftware\\Brave-Browser\\User Data\\Default\\Network\\Cookies", userDirectory);
+                    }
                     aesStateKeyPath = String.Format("{0}\\AppData\\Local\\BraveSoftware\\Brave-Browser\\User Data\\Local State", userDirectory);
                 }
                 else
@@ -347,9 +359,6 @@ namespace SharpChrome
 
             foreach (string userDirectory in userDirectories)
             {
-                var loginDataPath = "";
-                var aesStateKeyPath = "";
-
                 string[] aesKeyPaths = new string[]
                 {
                     $"{userDirectory}\\AppData\\Local\\Google\\Chrome\\User Data\\Local State",
@@ -536,9 +545,8 @@ namespace SharpChrome
             //string query = "SELECT cast(creation_utc as text) as creation_utc, host_key, name, path, cast(expires_utc as text) as expires_utc, is_secure, is_httponly, cast(last_access_utc as text) as last_access_utc, encrypted_value FROM cookies";
             
             // new, seems to work with partial indexing?? "/giphy table flip"
-            string query = "SELECT cast(creation_utc as text) as creation_utc, host_key, name, path, cast(expires_utc as text) as expires_utc, cast(last_access_utc as text) as last_access_utc,cast(last_update_utc as text) as last_update_utc encrypted_value FROM cookies";
+            string query = "SELECT cast(creation_utc as text) as creation_utc, host_key, name, path, cast(expires_utc as text) as expires_utc, cast(last_access_utc as text) as last_access_utc, encrypted_value FROM cookies";
             List<SQLiteQueryRow> results = database.Query2(query, false);
-
 
             // used if cookies "never expire" for json output
             DateTime epoch = new DateTime(1601, 1, 1);
@@ -693,7 +701,7 @@ namespace SharpChrome
                                 {
                                     Console.WriteLine("SEP=,");
                                 }
-                                Console.WriteLine("file_path,host,path,name,value,creation_utc,expires_utc,last_access_utc, last_update_utc");
+                                Console.WriteLine("file_path,host,path,name,value,creation_utc,expires_utc,last_access_utc");
                             }
                             someResults = true;
 

@@ -65,15 +65,6 @@
     </ApplicationDefinition>
     <Compile Include="ExportMethods.cs" />
     <Compile Include="ImportMethods.cs" />
-    <Compile Include="SharpDPAPI\SharpChrome\Commands\Backupkey.cs" />
-    <Compile Include="SharpDPAPI\SharpChrome\Commands\Cookies.cs" />
-    <Compile Include="SharpDPAPI\SharpChrome\Commands\ICommand.cs" />
-    <Compile Include="SharpDPAPI\SharpChrome\Commands\Logins.cs" />
-    <Compile Include="SharpDPAPI\SharpChrome\Commands\Statekeys.cs" />
-    <Compile Include="SharpDPAPI\SharpChrome\Domain\ArgumentParser.cs" />
-    <Compile Include="SharpDPAPI\SharpChrome\Domain\ArgumentParserResult.cs" />
-    <Compile Include="SharpDPAPI\SharpChrome\Domain\CommandCollection.cs" />
-    <Compile Include="SharpDPAPI\SharpChrome\Domain\Info.cs" />
     <Compile Include="SharpDPAPI\SharpChrome\lib\Bcrypt.cs" />
     <Compile Include="SharpDPAPI\SharpChrome\lib\Chrome.cs" />
     <Compile Include="SharpDPAPI\SharpChrome\SQLite\csharp-sqlite-src\alter_c.cs" />
@@ -160,27 +151,6 @@
     <Compile Include="SharpDPAPI\SharpChrome\SQLite\csharp-sqlite-src\where_c.cs" />
     <Compile Include="SharpDPAPI\SharpChrome\SQLite\csharp-sqlite-src\_Custom.cs" />
     <Compile Include="SharpDPAPI\SharpChrome\SQLite\SQLite.cs" />
-    <Compile Include="SharpDPAPI\SharpDPAPI\Commands\Backupkey.cs" />
-    <Compile Include="SharpDPAPI\SharpDPAPI\Commands\Blob.cs" />
-    <Compile Include="SharpDPAPI\SharpDPAPI\Commands\Certificate.cs" />
-    <Compile Include="SharpDPAPI\SharpDPAPI\Commands\Credentials.cs" />
-    <Compile Include="SharpDPAPI\SharpDPAPI\Commands\ICommand.cs" />
-    <Compile Include="SharpDPAPI\SharpDPAPI\Commands\Keepass.cs" />
-    <Compile Include="SharpDPAPI\SharpDPAPI\Commands\Machinecredentials.cs" />
-    <Compile Include="SharpDPAPI\SharpDPAPI\Commands\Machinemasterkeys.cs" />
-    <Compile Include="SharpDPAPI\SharpDPAPI\Commands\Machinetriage.cs" />
-    <Compile Include="SharpDPAPI\SharpDPAPI\Commands\Machinevaults.cs" />
-    <Compile Include="SharpDPAPI\SharpDPAPI\Commands\Masterkeys.cs" />
-    <Compile Include="SharpDPAPI\SharpDPAPI\Commands\PS.cs" />
-    <Compile Include="SharpDPAPI\SharpDPAPI\Commands\RDG.cs" />
-    <Compile Include="SharpDPAPI\SharpDPAPI\Commands\Search.cs" />
-    <Compile Include="SharpDPAPI\SharpDPAPI\Commands\Triage.cs" />
-    <Compile Include="SharpDPAPI\SharpDPAPI\Commands\Vaults.cs" />
-    <Compile Include="SharpDPAPI\SharpDPAPI\Domain\ArgumentParser.cs" />
-    <Compile Include="SharpDPAPI\SharpDPAPI\Domain\ArgumentParserResult.cs" />
-    <Compile Include="SharpDPAPI\SharpDPAPI\Domain\CommandCollection.cs" />
-    <Compile Include="SharpDPAPI\SharpDPAPI\Domain\Info.cs" />
-    <Compile Include="SharpDPAPI\SharpDPAPI\Domain\Version.cs" />
     <Compile Include="SharpDPAPI\SharpDPAPI\lib\Backup.cs" />
     <Compile Include="SharpDPAPI\SharpDPAPI\lib\BigInteger.cs" />
     <Compile Include="SharpDPAPI\SharpDPAPI\lib\Certificate.cs" />
@@ -232,9 +202,7 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-    <None Include="SharpDPAPI\CHANGELOG.md" />
     <None Include="SharpDPAPI\LICENSE" />
-    <None Include="SharpDPAPI\README.md" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Costura.Fody">
@@ -259,8 +227,9 @@
     <Resource Include="FodyWeavers.xml" />
     <EmbeddedResource Include="Costura32\SQLite.Interop.dll" />
     <EmbeddedResource Include="Costura64\SQLite.Interop.dll" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="SharpDPAPI\.gitignore" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -30,12 +30,13 @@ namespace ChloniumUI
             return sid;
         }
 
-        public static Dictionary<string, string> TriageUserMasterKeys(string password, string target)
+        public static Dictionary<string, string> TriageUserMasterKeys(string password, string target, bool quiet = true)
         {
-            // Extension to SharpDPAPI TriageMasterKeys method to support specifying a target and password
+            // Extension to SharpDPAPI TriageMasterKeys method to support specifying a target and password *or* NTLM
 
             Dictionary<string, string> mappings = new Dictionary<string, string>();
             string sid = string.Empty;
+            bool domain = false;
 
             if (string.IsNullOrEmpty(password) || string.IsNullOrEmpty(target) || !Directory.Exists(target))
                 return mappings;
@@ -45,6 +46,7 @@ namespace ChloniumUI
             {
                 if (Path.GetFileName(file).StartsWith("BK-"))
                 {
+                    domain = true;
                     sid = GetSidFromBKFile(file);
                     if (!string.IsNullOrEmpty(sid))
                         break;
@@ -52,7 +54,8 @@ namespace ChloniumUI
             }
 
             // Fall back to directory name
-            if (string.IsNullOrEmpty(sid) && Regex.IsMatch(Path.GetFileName(target), @"^S-\d-\d+-(\d+-){1,14}\d+$", RegexOptions.IgnoreCase))
+            if (string.IsNullOrEmpty(sid) && 
+                Regex.IsMatch(Path.GetFileName(target), @"^S-\d-\d+-(\d+-){1,14}\d+$", RegexOptions.IgnoreCase))
             {
                 sid = Path.GetFileName(target);
             }
@@ -64,7 +67,7 @@ namespace ChloniumUI
                 return mappings;
             }
 
-            byte[] hmacBytes = Dpapi.CalculateKeys(password, sid, true);
+            byte[] hmacBytes = Dpapi.CalculateKeys(password, "", domain, sid);
 
             foreach (string file in Directory.GetFiles(target, "*", SearchOption.AllDirectories))
             {
@@ -84,7 +87,8 @@ namespace ChloniumUI
                 }
                 catch (Exception e)
                 {
-                    MessageBox.Show($"Error triaging {file} : {e.Message}");
+                    if (!quiet)
+                        MessageBox.Show($"Error triaging {file} : {e.Message}");
                 }
             }
             return mappings;
