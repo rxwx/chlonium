@@ -5,6 +5,8 @@ using System.Windows;
 using static PInvoke.BCrypt;
 using System.Text.RegularExpressions;
 using System.Security.Cryptography;
+using System.Net.NetworkInformation;
+using System.Security.Cryptography.Pkcs;
 
 namespace ChloniumUI
 {
@@ -15,13 +17,13 @@ namespace ChloniumUI
         private static readonly byte[] prefix = { 0x76, 0x31, 0x30 };
 
         private static readonly int PREFIX_SIZE = prefix.Length;
-        
+
         private static readonly int NONCE_SIZE = 12;
-              
+
         private static readonly int TAG_SIZE = 16;
-        
+
         private readonly string localStatePath;
-        
+
         private byte[] key;
 
         public AesCrypto(string localStatePath)
@@ -73,9 +75,7 @@ namespace ChloniumUI
         // Example taken with thanks from https://github.com/AArnott/pinvoke/issues/441
         public unsafe static byte[] GcmDecrypt(byte[] pbData, byte[] pbKey, byte[] pbNonce, byte[] pbTag, byte[] pbAuthData = null)
         {
-
             pbAuthData = pbAuthData ?? new byte[0];
-
             NTSTATUS status = 0;
 
             using (var provider = BCryptOpenAlgorithmProvider(AlgorithmIdentifiers.BCRYPT_AES_ALGORITHM))
@@ -141,7 +141,6 @@ namespace ChloniumUI
         public unsafe static byte[] GcmEncrypt(byte[] pbData, byte[] pbKey, byte[] pbNonce, byte[] pbTag, byte[] pbAuthData = null)
         {
             pbAuthData = pbAuthData ?? new byte[0];
-
             NTSTATUS status = 0;
 
             using (var provider = BCryptOpenAlgorithmProvider(AlgorithmIdentifiers.BCRYPT_AES_ALGORITHM))
@@ -209,7 +208,7 @@ namespace ChloniumUI
 
             byte[] pbTag = new byte[TAG_SIZE];
             rand.NextBytes(pbTag);
-            
+
             byte[] encryptedBytes = GcmEncrypt(plainText, key, pbNonce, pbTag);
             byte[] cipherText = new byte[prefix.Length + NONCE_SIZE + encryptedBytes.Length + TAG_SIZE];
             prefix.CopyTo(cipherText, 0);

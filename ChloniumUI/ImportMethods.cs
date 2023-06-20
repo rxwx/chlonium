@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -54,7 +55,7 @@ namespace ChloniumUI
 
         internal class DatabaseImporter : Importer
         {
-            public DatabaseImporter(BrowserConfig browser, byte[] stateKey): base(browser, stateKey)
+            public DatabaseImporter(BrowserConfig browser, byte[] stateKey) : base(browser, stateKey)
             {
             }
 
@@ -239,7 +240,7 @@ namespace ChloniumUI
 
         internal class StateKeyImporter : Importer
         {
-            public StateKeyImporter(BrowserConfig browser, byte[] stateKey): base(browser, stateKey)
+            public StateKeyImporter(BrowserConfig browser, byte[] stateKey) : base(browser, stateKey)
             {
             }
 

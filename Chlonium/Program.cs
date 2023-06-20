@@ -16,7 +16,7 @@ namespace Chlonium
             }
             else
             {
-                localStatePath = string.Format("{0}\\AppData\\Local\\Google\\Chrome\\User Data\\Local State", 
+                localStatePath = string.Format("{0}\\AppData\\Local\\Google\\Chrome\\User Data\\Local State",
                     Environment.GetEnvironmentVariable("USERPROFILE"));
             }
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Linq;
+using System.Net;
 using System.Windows;
 
 namespace ChloniumUI

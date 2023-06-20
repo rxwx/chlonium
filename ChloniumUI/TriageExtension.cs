@@ -54,14 +54,14 @@ namespace ChloniumUI
             }
 
             // Fall back to directory name
-            if (string.IsNullOrEmpty(sid) && 
+            if (string.IsNullOrEmpty(sid) &&
                 Regex.IsMatch(Path.GetFileName(target), @"^S-\d-\d+-(\d+-){1,14}\d+$", RegexOptions.IgnoreCase))
             {
                 sid = Path.GetFileName(target);
             }
             else if (string.IsNullOrEmpty(sid))
             {
-                MessageBox.Show("Could not determine users's SID. " + 
+                MessageBox.Show("Could not determine users's SID. " +
                     "Ensure that DPAPI Masterkey directory name contains the user SID, " +
                     "OR that the BK-<NETBIOSDOMAINNAME> file is present");
                 return mappings;

@@ -228,7 +228,7 @@ namespace ChloniumUI
                         MessageBox.Show("Imported new State Key!");
                         return;
                     }
-                    
+
                     break;
                 case "logins":
 
@@ -537,7 +537,7 @@ namespace ChloniumUI
             }
 
             byte[] decryptedKey = Chrome.DecryptBase64StateKey(masterkeys, this.base64Key, false);
-            
+
             if (decryptedKey == null || decryptedKey.Length == 0)
             {
                 MessageBox.Show(string.Format("Failed to decrypt State Key with supplied {0}", this.pvkBytes != null ? "backup key" : "password"));
